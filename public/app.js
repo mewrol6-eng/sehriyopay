@@ -26,7 +26,7 @@ function checkPassword() {
         showMessage('passwordMessage', '✅ Успешный вход!', false);
         setTimeout(() => {
             showScreen('scannerScreen');
-            initializeCamera();
+            // НЕ запускаем камеру автоматически - ждем действия пользователя
         }, 1000);
     } else {
         showMessage('passwordMessage', '❌ Неверный пароль! Попробуйте снова.', true);
@@ -40,11 +40,15 @@ function showScreen(screenId) {
     document.getElementById(screenId).classList.add('active');
 }
 
+// Функция для ручного запуска камеры (по нажатию кнопки)
+function requestCameraPermission() {
+    showMessage('operationMessage', '🔄 Запрашиваю доступ к камере...', false);
+    initializeCamera();
+}
+
 // Инициализация камеры и сканирования
 async function initializeCamera() {
     try {
-        showMessage('operationMessage', '🔄 Запускаю камеру...', false);
-        
         // Создаем экземпляр сканера
         html5Qrcode = new Html5Qrcode("qr-reader");
         
@@ -68,6 +72,7 @@ async function initializeCamera() {
         document.getElementById('cameraPermission').style.display = 'none';
         document.getElementById('qr-reader').classList.add('camera-active');
         document.getElementById('flashToggleBtn').disabled = false;
+        document.getElementById('manualQRBtn').style.display = 'none'; // Скрываем кнопку ручного ввода
         
         showMessage('operationMessage', '✅ Камера активна! Наведите на QR-код', false);
         
@@ -91,6 +96,7 @@ async function initializeCamera() {
         
         // Показываем ручной ввод как запасной вариант
         document.getElementById('cameraPermission').style.display = 'block';
+        document.getElementById('manualQRBtn').style.display = 'block';
     }
 }
 
@@ -220,6 +226,7 @@ async function stopCamera() {
     document.getElementById('flashToggleBtn').textContent = '🔦 Включить вспышку';
     document.getElementById('flashToggleBtn').classList.remove('btn-success');
     document.getElementById('flashToggleBtn').classList.add('btn-warning');
+    document.getElementById('manualQRBtn').style.display = 'block';
     
     showMessage('operationMessage', '⏹️ Камера остановлена', false);
 }
@@ -335,6 +342,14 @@ function logout() {
     showScreen('passwordScreen');
 }
 
+// Ручной ввод QR-кода
+function manualQRInput() {
+    const qrCode = prompt('Введите QR-код ученика вручную:', 'TEST123');
+    if (qrCode) {
+        onScanSuccess(qrCode);
+    }
+}
+
 // Enter для пароля
 document.getElementById('password').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
@@ -353,13 +368,5 @@ document.getElementById('amount').addEventListener('keypress', function(e) {
 window.addEventListener('beforeunload', function() {
     stopCamera();
 });
-
-// Ручной ввод QR-кода для тестирования
-function manualQRInput() {
-    const qrCode = prompt('Введите QR-код вручную:', 'TEST123');
-    if (qrCode) {
-        onScanSuccess(qrCode);
-    }
-}
 
 console.log('🚀 SehriyoPay загружен!');
