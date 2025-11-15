@@ -37,12 +37,19 @@ function showScreen(screenId) {
     document.getElementById(screenId).classList.add('active');
 }
 
-// Функция для ручного ввода QR-кода
-function manualQRInput() {
-    const qrCode = prompt('Введите QR-код ученика:', 'TEST123');
+// Функция для ручного ввода QR-кода из поля
+function manualQRInputFromField() {
+    const qrCode = document.getElementById('manualQRInput').value.trim();
     if (qrCode) {
         fetchStudentInfo(qrCode);
+    } else {
+        showMessage('operationMessage', '❌ Введите QR-код', true);
     }
+}
+
+// Функция для быстрого ввода тестового QR-кода
+function manualQRInput() {
+    fetchStudentInfo('TEST123');
 }
 
 // Поиск ученика по QR-коду
@@ -161,6 +168,7 @@ function logout() {
     document.getElementById('password').value = '';
     document.getElementById('studentInfo').style.display = 'none';
     document.getElementById('amount').value = '100';
+    document.getElementById('manualQRInput').value = '';
     showScreen('passwordScreen');
 }
 
@@ -168,6 +176,13 @@ function logout() {
 document.getElementById('password').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
         checkPassword();
+    }
+});
+
+// Enter для поля QR-кода
+document.getElementById('manualQRInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        manualQRInputFromField();
     }
 });
 
@@ -179,15 +194,3 @@ document.getElementById('amount').addEventListener('keypress', function(e) {
 });
 
 console.log('🚀 SehriyoPay загружен!');
-}
-}};
-
-// Функция для ввода QR-кода из поля ввода
-function manualQRInputFromField() {
-    const qrCode = document.getElementById('manualQRInput').value.trim();
-    if (qrCode) {
-        fetchStudentInfo(qrCode);
-    } else {
-        showMessage('operationMessage', '❌ Введите QR-код', true);
-    }
-}
