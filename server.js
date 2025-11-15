@@ -1,180 +1,132 @@
-// Ultra-simple server - NO dependencies needed!
-const http = require('http');
-const fs = require('fs');
+const express = require('express');
+const bodyParser = require('body-parser');
+const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
-const url = require('url');
+const fs = require('fs');
 
-const PORT = 3000;
-const DB_FILE = './database.json';
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-// Initialize database
-if (!fs.existsSync(DB_FILE)) {
-    fs.writeFileSync(DB_FILE, JSON.stringify({
-        students: [{
-            id: 1,
-            qr_code: 'TEST123',
-            firstName: 'Иван',
-            lastName: 'Иванов', 
-            class: '5А',
-            balance: 1000
-        }],
-        transactions: []
-    }, null, 2));
-}
+// Правильная настройка статических файлов
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Read database
-function readDB() {
-    return JSON.parse(fs.readFileSync(DB_FILE));
-}
+app.use(bodyParser.json());
 
-// Write database  
-function writeDB(data) {
-    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
-}
+// База данных
+const db = new sqlite3.Database('./school.db');
 
-// Create server
-const server = http.createServer((req, res) => {
-    const parsedUrl = url.parse(req.url, true);
-    const pathname = parsedUrl.pathname;
-    
-    // CORS headers
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    
-    if (req.method === 'OPTIONS') {
-        res.writeHead(200);
-        res.end();
-        return;
-    }
-    
-    // Serve HTML
-    if (pathname === '/' && req.method === 'GET') {
-        serveFile(res, './public/index.html', 'text/html');
-        return;
-    }
-    
-    // Serve JS
-    if (pathname === '/app.js' && req.method === 'GET') {
-        serveFile(res, './public/app.js', 'application/javascript');
-        return;
-    }
-    
-    // API routes
-    if (pathname.startsWith('/api/student/') && req.method === 'GET') {
-        const qrCode = pathname.split('/')[3];
-        handleGetStudent(res, qrCode);
-        return;
-    }
-    
-    if (pathname.match(/\/api\/student\/\d+\/add/) && req.method === 'POST') {
-        const studentId = parseInt(pathname.split('/')[3]);
-        handlePostRequest(req, res, studentId, 'add');
-        return;
-    }
-    
-    if (pathname.match(/\/api\/student\/\d+\/subtract/) && req.method === 'POST') {
-        const studentId = parseInt(pathname.split('/')[3]);
-        handlePostRequest(req, res, studentId, 'subtract');
-        return;
-    }
-    
-    // 404
-    res.writeHead(404);
-    res.end('Not found');
+// Создаем таблицы при запуске
+db.serialize(() => {
+    db.run(`CREATE TABLE IF NOT EXISTS students (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        qr_code TEXT UNIQUE,
+        first_name TEXT NOT NULL,
+        last_name TEXT NOT NULL,
+        class TEXT NOT NULL,
+        phone TEXT,
+        password TEXT,
+        balance INTEGER DEFAULT 0
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS transactions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        student_id INTEGER,
+        amount INTEGER,
+        type TEXT,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`);
+
+    // Добавляем тестового ученика
+    db.run(`INSERT OR IGNORE INTO students (qr_code, first_name, last_name, class, phone, password, balance) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)`, 
+            ['TEST123', 'Иван', 'Иванов', '5А', '+998901234567', 'pass123', 1000]);
 });
 
-function serveFile(res, filePath, contentType) {
-    const fullPath = path.join(__dirname, filePath);
-    fs.readFile(fullPath, (err, data) => {
+// API для получения информации об ученике
+app.get('/api/student/:qrCode', (req, res) => {
+    const qrCode = req.params.qrCode;
+    db.get('SELECT * FROM students WHERE qr_code = ?', [qrCode], (err, row) => {
         if (err) {
-            res.writeHead(404);
-            res.end('File not found');
-        } else {
-            res.writeHead(200, { 'Content-Type': contentType });
-            res.end(data);
+            return res.status(500).json({ error: err.message });
         }
-    });
-}
-
-function handleGetStudent(res, qrCode) {
-    const db = readDB();
-    const student = db.students.find(s => s.qr_code === qrCode);
-    
-    if (student) {
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-            id: student.id,
-            firstName: student.firstName,
-            lastName: student.lastName, 
-            class: student.class,
-            balance: student.balance
-        }));
-    } else {
-        res.writeHead(404, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Ученик не найден' }));
-    }
-}
-
-function handlePostRequest(req, res, studentId, operation) {
-    let body = '';
-    req.on('data', chunk => body += chunk.toString());
-    req.on('end', () => {
-        try {
-            const data = JSON.parse(body);
-            const amount = data.amount;
-            
-            if (!amount || amount <= 0) {
-                res.writeHead(400, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ error: 'Неверная сумма' }));
-                return;
-            }
-            
-            const db = readDB();
-            const studentIndex = db.students.findIndex(s => s.id === studentId);
-            
-            if (studentIndex === -1) {
-                res.writeHead(404, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ error: 'Ученик не найден' }));
-                return;
-            }
-            
-            if (operation === 'add') {
-                db.students[studentIndex].balance += amount;
-            } else {
-                if (db.students[studentIndex].balance < amount) {
-                    res.writeHead(400, { 'Content-Type': 'application/json' });
-                    res.end(JSON.stringify({ error: 'Недостаточно средств' }));
-                    return;
-                }
-                db.students[studentIndex].balance -= amount;
-            }
-            
-            db.transactions.push({
-                student_id: studentId,
-                amount: amount,
-                type: operation,
-                timestamp: new Date().toISOString()
+        if (row) {
+            res.json({
+                id: row.id,
+                firstName: row.first_name,
+                lastName: row.last_name,
+                class: row.class,
+                balance: row.balance
             });
-            
-            writeDB(db);
-            
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({
-                message: operation === 'add' ? 'Баланс пополнен' : 'Средства списаны',
-                newBalance: db.students[studentIndex].balance
-            }));
-            
-        } catch (error) {
-            res.writeHead(400, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ error: 'Ошибка формата данных' }));
+        } else {
+            res.status(404).json({ error: 'Ученик не найден' });
         }
     });
-}
+});
 
-// Start server
-server.listen(PORT, '0.0.0.0', () => {
+// API для пополнения баланса
+app.post('/api/student/:id/add', (req, res) => {
+    const studentId = req.params.id;
+    const amount = req.body.amount;
+
+    if (!amount || amount <= 0) {
+        return res.status(400).json({ error: 'Неверная сумма' });
+    }
+
+    db.run('UPDATE students SET balance = balance + ? WHERE id = ?', [amount, studentId], function(err) {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        db.run('INSERT INTO transactions (student_id, amount, type) VALUES (?, ?, ?)', [studentId, amount, 'add']);
+        
+        db.get('SELECT balance FROM students WHERE id = ?', [studentId], (err, row) => {
+            res.json({ 
+                message: 'Баланс пополнен', 
+                newBalance: row.balance 
+            });
+        });
+    });
+});
+
+// API для списания баланса
+app.post('/api/student/:id/subtract', (req, res) => {
+    const studentId = req.params.id;
+    const amount = req.body.amount;
+
+    if (!amount || amount <= 0) {
+        return res.status(400).json({ error: 'Неверная сумма' });
+    }
+
+    db.get('SELECT balance FROM students WHERE id = ?', [studentId], (err, row) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        
+        if (row.balance < amount) {
+            return res.status(400).json({ error: 'Недостаточно средств' });
+        }
+
+        db.run('UPDATE students SET balance = balance - ? WHERE id = ?', [amount, studentId], function(err) {
+            if (err) {
+                return res.status(500).json({ error: err.message });
+            }
+            db.run('INSERT INTO transactions (student_id, amount, type) VALUES (?, ?, ?)', [studentId, amount, 'subtract']);
+            
+            db.get('SELECT balance FROM students WHERE id = ?', [studentId], (err, row) => {
+                res.json({ 
+                    message: 'Средства списаны', 
+                    newBalance: row.balance 
+                });
+            });
+        });
+    });
+});
+
+// Главная страница
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Запуск сервера
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Сервер запущен: http://localhost:${PORT}`);
-    console.log(`🔐 Пароль: school123 | QR-код: TEST123`);
-    console.log(`📁 База данных: ${DB_FILE}`);
 });
