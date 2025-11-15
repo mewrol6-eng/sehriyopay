@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SehriyoPay - Школьная оплата</title>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        .header {
+            background: #4f46e5;
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+        
+        .screen {
+            padding: 30px;
+            display: none;
+        }
+        
+        .active {
+            display: block;
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #374151;
+            font-size: 16px;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+        
+        .btn:hover {
+            background: #4338ca;
+            transform: translateY(-2px);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-success {
+            background: #10b981;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .btn-warning {
+            background: #f59e0b;
+        }
+        
+        .btn-warning:hover {
+            background: #d97706;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        #qr-reader {
+            width: 100%;
+            margin: 20px 0;
+            border: 2px dashed #e5e7eb;
+            border-radius: 10px;
+            padding: 10px;
+        }
+        
+        .student-card {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            display: none;
+        }
+        
+        .student-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-item {
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .info-label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        
+        .info-value {
+            font-weight: 700;
+            color: #1f2937;
+            font-size: 16px;
+        }
+        
+        .balance {
+            text-align: center;
+            font-size: 32px;
+            font-weight: bold;
+            color: #059669;
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            border: 2px solid #10b981;
+        }
+        
+        .amount-input {
+            margin: 20px 0;
+        }
+        
+        .amount-input input {
+            width: 100%;
+            padding: 15px;
+            border: 3px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            color: #1f2937;
+        }
+        
+        .amount-input input:focus {
+            border-color: #4f46e5;
+            outline: none;
+        }
+        
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .logout-btn {
+            margin-top: 20px;
+            background: #6b7280;
+        }
+        
+        .status-message {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-align: center;
+            display: none;
+        }
+        
+        .success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏫 SehriyoPay</h1>
+            <p>Школьная система безналичной оплаты</p>
+        </div>
+        
+        <!-- Экран ввода пароля -->
+        <div class="screen active" id="passwordScreen">
+            <div class="input-group">
+                <label for="password">🔒 Пароль продавца:</label>
+                <input type="password" id="password" placeholder="Введите пароль для доступа" autocomplete="off">
+            </div>
+            <button class="btn" onclick="checkPassword()">🚪 Войти в систему</button>
+            <div class="status-message" id="passwordMessage"></div>
+        </div>
+        
+        <!-- Экран сканирования -->
+        <div class="screen" id="scannerScreen">
+            <h3 style="text-align: center; margin-bottom: 20px; color: #374151;">📷 Сканируйте QR-код ученика</h3>
+            
+            <div id="qr-reader"></div>
+            
+            <button class="btn btn-warning" id="flashBtn">
+                🔦 Включить вспышку
+            </button>
+            
+            <div class="student-card" id="studentInfo">
+                <h4 style="text-align: center; margin-bottom: 20px; color: #374151;">👨‍🎓 Информация об ученике</h4>
+                
+                <div class="student-info">
+                    <div class="info-item">
+                        <div class="info-label">Имя Фамилия</div>
+                        <div class="info-value" id="studentName">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Класс</div>
+                        <div class="info-value" id="studentClass">-</div>
+                    </div>
+                </div>
+                
+                <div class="balance" id="studentBalance">0 баллов</div>
+                
+                <div class="amount-input">
+                    <input type="number" id="amount" placeholder="0" min="1" value="100">
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-success" onclick="addBalance()">💵 Пополнить</button>
+                    <button class="btn btn-danger" onclick="subtractBalance()">💰 Списать</button>
+                </div>
+                
+                <div class="status-message" id="operationMessage"></div>
+            </div>
+            
+            <button class="btn btn-secondary logout-btn" onclick="logout()">🚪 Выйти из системы</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

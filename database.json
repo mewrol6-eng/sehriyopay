@@ -1,0 +1,13 @@
+{
+  "students": [
+    {
+      "id": 1,
+      "qr_code": "TEST123",
+      "firstName": "Иван",
+      "lastName": "Иванов",
+      "class": "5А",
+      "balance": 1000
+    }
+  ],
+  "transactions": []
+}
