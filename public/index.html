@@ -1,361 +1,196 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SehriyoPay - Школьная оплата</title>
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .container {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
-            width: 100%;
-            max-width: 500px;
-        }
-        
-        .header {
-            background: #4f46e5;
-            color: white;
-            padding: 25px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 5px;
-        }
-        
-        .header p {
-            opacity: 0.9;
-            font-size: 16px;
-        }
-        
-        .screen {
-            padding: 30px;
-            display: none;
-        }
-        
-        .active {
-            display: block;
-        }
-        
-        .input-group {
-            margin-bottom: 25px;
-        }
-        
-        .input-group label {
-            display: block;
-            margin-bottom: 10px;
-            font-weight: 600;
-            color: #374151;
-            font-size: 16px;
-        }
-        
-        .input-group input {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s;
-        }
-        
-        .input-group input:focus {
-            outline: none;
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-        }
-        
-        .btn {
-            width: 100%;
-            padding: 15px;
-            background: #4f46e5;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-bottom: 10px;
-        }
-        
-        .btn:hover {
-            background: #4338ca;
-            transform: translateY(-2px);
-        }
-        
-        .btn:active {
-            transform: translateY(0);
-        }
-        
-        .btn-success {
-            background: #10b981;
-        }
-        
-        .btn-success:hover {
-            background: #059669;
-        }
-        
-        .btn-danger {
-            background: #ef4444;
-        }
-        
-        .btn-danger:hover {
-            background: #dc2626;
-        }
-        
-        .btn-warning {
-            background: #f59e0b;
-        }
-        
-        .btn-warning:hover {
-            background: #d97706;
-        }
-        
-        .btn-secondary {
-            background: #6b7280;
-        }
-        
-        .btn-secondary:hover {
-            background: #4b5563;
-        }
-        
-        #qr-reader {
-            width: 100%;
-            margin: 20px 0;
-            border: 2px dashed #e5e7eb;
-            border-radius: 10px;
-            padding: 10px;
-            min-height: 300px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #f8fafc;
-        }
-        
-        .camera-permission {
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .camera-permission h3 {
-            margin-bottom: 15px;
-            color: #374151;
-        }
-        
-        .camera-permission p {
-            color: #6b7280;
-            margin-bottom: 20px;
-        }
-        
-        .student-card {
-            background: #f8fafc;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 25px;
-            margin: 25px 0;
-            display: none;
-        }
-        
-        .student-info {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .info-item {
-            padding: 12px;
-            background: white;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-        }
-        
-        .info-label {
-            font-size: 12px;
-            color: #6b7280;
-            margin-bottom: 4px;
-            text-transform: uppercase;
-            font-weight: 600;
-        }
-        
-        .info-value {
-            font-weight: 700;
-            color: #1f2937;
-            font-size: 16px;
-        }
-        
-        .balance {
-            text-align: center;
-            font-size: 32px;
-            font-weight: bold;
-            color: #059669;
-            margin: 20px 0;
-            padding: 15px;
-            background: white;
-            border-radius: 10px;
-            border: 2px solid #10b981;
-        }
-        
-        .amount-input {
-            margin: 20px 0;
-        }
-        
-        .amount-input input {
-            width: 100%;
-            padding: 15px;
-            border: 3px solid #e5e7eb;
-            border-radius: 10px;
-            font-size: 24px;
-            font-weight: bold;
-            text-align: center;
-            color: #1f2937;
-        }
-        
-        .amount-input input:focus {
-            border-color: #4f46e5;
-            outline: none;
-        }
-        
-        .action-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 20px;
-        }
-        
-        .logout-btn {
-            margin-top: 20px;
-            background: #6b7280;
-        }
-        
-        .status-message {
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
-            text-align: center;
-            display: none;
-        }
-        
-        .success {
-            background: #d1fae5;
-            color: #065f46;
-            border: 1px solid #a7f3d0;
-        }
-        
-        .error {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #fca5a5;
-        }
-        
-        .flash-controls {
-            display: flex;
-            gap: 10px;
-            margin: 15px 0;
-        }
-        
-        .flash-btn {
-            flex: 1;
-        }
-        
-        .camera-active {
-            border-color: #10b981 !important;
-            background: #f0fdf4 !important;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>🏫 SehriyoPay</h1>
-            <p>Школьная система безналичной оплаты</p>
-        </div>
-        
-        <!-- Экран ввода пароля -->
-        <div class="screen active" id="passwordScreen">
-            <div class="input-group">
-                <label for="password">🔒 Пароль продавца:</label>
-                <input type="password" id="password" placeholder="Введите пароль для доступа" autocomplete="off">
-            </div>
-            <button class="btn" onclick="checkPassword()">🚪 Войти в систему</button>
-            <div class="status-message" id="passwordMessage"></div>
-        </div>
-        
-        <!-- Экран сканирования -->
-        <div class="screen" id="scannerScreen">
-            <h3 style="text-align: center; margin-bottom: 20px; color: #374151;">📷 Сканируйте QR-код ученика</h3>
-            
-            <div id="qr-reader">
-                <div class="camera-permission" id="cameraPermission">
-                    <h3>📸 Доступ к камере</h3>
-                    <p>Для сканирования QR-кодов необходимо разрешить доступ к камере</p>
-                    <button class="btn btn-success" onclick="requestCameraPermission()">
-                        🎥 Разрешить камеру
-                    </button>
-                </div>
-            </div>
-            
-            <div class="flash-controls">
-                <button class="btn btn-warning flash-btn" id="flashToggleBtn" onclick="toggleFlash()" disabled>
-                    🔦 Включить вспышку
-                </button>
-                <button class="btn btn-secondary flash-btn" id="stopCameraBtn" onclick="stopCamera()">
-                    ⏹️ Остановить камеру
-                </button>
-            </div>
-            
-            <div class="student-card" id="studentInfo">
-                <h4 style="text-align: center; margin-bottom: 20px; color: #374151;">👨‍🎓 Информация об ученике</h4>
-                
-                <div class="student-info">
-                    <div class="info-item">
-                        <div class="info-label">Имя Фамилия</div>
-                        <div class="info-value" id="studentName">-</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Класс</div>
-                        <div class="info-value" id="studentClass">-</div>
-                    </div>
-                </div>
-                
-                <div class="balance" id="studentBalance">0 баллов</div>
-                
-                <div class="amount-input">
-                    <input type="number" id="amount" placeholder="0" min="1" value="100">
-                </div>
-                
-                <div class="action-buttons">
-                    <button class="btn btn-success" onclick="addBalance()">💵 Пополнить</button>
-                    <button class="btn btn-danger" onclick="subtractBalance()">💰 Списать</button>
-                </div>
-                
-                <div class="status-message" id="operationMessage"></div>
-            </div>
-            
-            <button class="btn btn-secondary logout-btn" onclick="logout()">🚪 Выйти из системы</button>
-        </div>
-    </div>
+let currentStudent = null;
+const SELLER_PASSWORD = 'school123';
 
-    <script src="app.js"></script>
-</body>
-</html>
+function showMessage(elementId, message, isError = false) {
+    const element = document.getElementById(elementId);
+    element.textContent = message;
+    element.className = `status-message ${isError ? 'error' : 'success'}`;
+    element.style.display = 'block';
+    
+    setTimeout(() => {
+        element.style.display = 'none';
+    }, 3000);
+}
+
+function checkPassword() {
+    const password = document.getElementById('password').value;
+    
+    if (!password) {
+        showMessage('passwordMessage', '❌ Введите пароль', true);
+        return;
+    }
+    
+    if (password === SELLER_PASSWORD) {
+        showMessage('passwordMessage', '✅ Успешный вход!', false);
+        setTimeout(() => {
+            showScreen('scannerScreen');
+        }, 1000);
+    } else {
+        showMessage('passwordMessage', '❌ Неверный пароль! Попробуйте снова.', true);
+    }
+}
+
+function showScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.remove('active');
+    });
+    document.getElementById(screenId).classList.add('active');
+}
+
+// Функция для ручного ввода QR-кода из поля
+function manualQRInputFromField() {
+    const qrCode = document.getElementById('manualQRInput').value.trim();
+    if (qrCode) {
+        fetchStudentInfo(qrCode);
+    } else {
+        showMessage('operationMessage', '❌ Введите QR-код', true);
+    }
+}
+
+// Функция для быстрого ввода тестового QR-кода
+function manualQRInput() {
+    fetchStudentInfo('TEST123');
+}
+
+// Поиск ученика по QR-коду
+async function fetchStudentInfo(qrCode) {
+    try {
+        showMessage('operationMessage', '🔄 Поиск ученика...', false);
+        
+        const response = await fetch(`/api/student/${qrCode}`);
+        const student = await response.json();
+        
+        if (student && !student.error) {
+            currentStudent = student;
+            displayStudentInfo(student);
+            showMessage('operationMessage', '✅ Ученик найден!', false);
+        } else {
+            showMessage('operationMessage', '❌ Ученик не найден', true);
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+        showMessage('operationMessage', '⚠️ Ошибка сети', true);
+    }
+}
+
+function displayStudentInfo(student) {
+    document.getElementById('studentName').textContent = `${student.firstName} ${student.lastName}`;
+    document.getElementById('studentClass').textContent = student.class;
+    document.getElementById('studentBalance').textContent = `${student.balance} баллов`;
+    document.getElementById('studentInfo').style.display = 'block';
+    
+    document.getElementById('studentInfo').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function addBalance() {
+    if (!currentStudent) {
+        showMessage('operationMessage', '❌ Сначала найдите ученика', true);
+        return;
+    }
+    
+    const amount = parseInt(document.getElementById('amount').value);
+    if (!amount || amount <= 0) {
+        showMessage('operationMessage', '💰 Введите корректную сумму', true);
+        return;
+    }
+
+    try {
+        showMessage('operationMessage', '⏳ Обработка операции...', false);
+        
+        const response = await fetch(`/api/student/${currentStudent.id}/add`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ amount })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showMessage('operationMessage', `✅ Баланс пополнен на ${amount} баллов`, false);
+            currentStudent.balance = result.newBalance;
+            displayStudentInfo(currentStudent);
+        } else {
+            showMessage('operationMessage', '❌ Ошибка: ' + result.error, true);
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+        showMessage('operationMessage', '⚠️ Ошибка сети', true);
+    }
+}
+
+async function subtractBalance() {
+    if (!currentStudent) {
+        showMessage('operationMessage', '❌ Сначала найдите ученика', true);
+        return;
+    }
+    
+    const amount = parseInt(document.getElementById('amount').value);
+    if (!amount || amount <= 0) {
+        showMessage('operationMessage', '💰 Введите корректную сумму', true);
+        return;
+    }
+
+    if (amount > currentStudent.balance) {
+        showMessage('operationMessage', '❌ Недостаточно средств на балансе', true);
+        return;
+    }
+
+    try {
+        showMessage('operationMessage', '⏳ Обработка операции...', false);
+        
+        const response = await fetch(`/api/student/${currentStudent.id}/subtract`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ amount })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showMessage('operationMessage', `✅ Списано ${amount} баллов`, false);
+            currentStudent.balance = result.newBalance;
+            displayStudentInfo(currentStudent);
+        } else {
+            showMessage('operationMessage', '❌ Ошибка: ' + result.error, true);
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+        showMessage('operationMessage', '⚠️ Ошибка сети', true);
+    }
+}
+
+function logout() {
+    currentStudent = null;
+    document.getElementById('password').value = '';
+    document.getElementById('studentInfo').style.display = 'none';
+    document.getElementById('amount').value = '100';
+    document.getElementById('manualQRInput').value = '';
+    showScreen('passwordScreen');
+}
+
+// Enter для пароля
+document.getElementById('password').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        checkPassword();
+    }
+});
+
+// Enter для поля QR-кода
+document.getElementById('manualQRInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        manualQRInputFromField();
+    }
+});
+
+// Enter для суммы
+document.getElementById('amount').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        subtractBalance();
+    }
+});
+
+console.log('🚀 SehriyoPay загружен!');
