@@ -1,5 +1,4 @@
 let currentStudent = null;
-let html5QrcodeScanner = null;
 const SELLER_PASSWORD = 'school123';
 
 function showMessage(elementId, message, isError = false) {
@@ -15,7 +14,6 @@ function showMessage(elementId, message, isError = false) {
 
 function checkPassword() {
     const password = document.getElementById('password').value;
-    const messageElement = document.getElementById('passwordMessage');
     
     if (!password) {
         showMessage('passwordMessage', '❌ Введите пароль', true);
@@ -26,7 +24,6 @@ function checkPassword() {
         showMessage('passwordMessage', '✅ Успешный вход!', false);
         setTimeout(() => {
             showScreen('scannerScreen');
-            initializeScanner();
         }, 1000);
     } else {
         showMessage('passwordMessage', '❌ Неверный пароль! Попробуйте снова.', true);
@@ -40,32 +37,20 @@ function showScreen(screenId) {
     document.getElementById(screenId).classList.add('active');
 }
 
-function initializeScanner() {
-    try {
-        html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { 
-            fps: 10,
-            qrbox: { width: 250, height: 250 },
-            supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
-            facingMode: "environment"
-        });
-
-        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
-        
-        // Скрываем сообщение о разрешении
-        document.getElementById('cameraPermission').style.display = 'none';
-        
-        console.log('Сканер QR-кодов инициализирован');
-    } catch (error) {
-        console.error('Ошибка инициализации сканера:', error);
-        showMessage('operationMessage', '⚠️ Ошибка при запуске камеры.', true);
+// Функция для ручного ввода QR-кода
+function manualQRInput() {
+    const qrCode = prompt('Введите QR-код ученика:', 'TEST123');
+    if (qrCode) {
+        fetchStudentInfo(qrCode);
     }
 }
 
-async function onScanSuccess(decodedText) {
+// Поиск ученика по QR-коду
+async function fetchStudentInfo(qrCode) {
     try {
-        console.log('📱 Сканирован QR-код:', decodedText);
+        showMessage('operationMessage', '🔄 Поиск ученика...', false);
         
-        const response = await fetch(`/api/student/${decodedText}`);
+        const response = await fetch(`/api/student/${qrCode}`);
         const student = await response.json();
         
         if (student && !student.error) {
@@ -73,16 +58,12 @@ async function onScanSuccess(decodedText) {
             displayStudentInfo(student);
             showMessage('operationMessage', '✅ Ученик найден!', false);
         } else {
-            showMessage('operationMessage', '❌ Ученик не найден в системе', true);
+            showMessage('operationMessage', '❌ Ученик не найден', true);
         }
     } catch (error) {
         console.error('Ошибка:', error);
-        showMessage('operationMessage', '⚠️ Ошибка сети. Проверьте подключение к интернету.', true);
+        showMessage('operationMessage', '⚠️ Ошибка сети', true);
     }
-}
-
-function onScanFailure(error) {
-    // Игнорируем обычные ошибки сканирования
 }
 
 function displayStudentInfo(student) {
@@ -91,13 +72,12 @@ function displayStudentInfo(student) {
     document.getElementById('studentBalance').textContent = `${student.balance} баллов`;
     document.getElementById('studentInfo').style.display = 'block';
     
-    // Прокручиваем к информации об ученике
     document.getElementById('studentInfo').scrollIntoView({ behavior: 'smooth' });
 }
 
 async function addBalance() {
     if (!currentStudent) {
-        showMessage('operationMessage', '❌ Сначала отсканируйте QR-код ученика', true);
+        showMessage('operationMessage', '❌ Сначала найдите ученика', true);
         return;
     }
     
@@ -129,13 +109,13 @@ async function addBalance() {
         }
     } catch (error) {
         console.error('Ошибка:', error);
-        showMessage('operationMessage', '⚠️ Ошибка сети. Проверьте подключение к интернету.', true);
+        showMessage('operationMessage', '⚠️ Ошибка сети', true);
     }
 }
 
 async function subtractBalance() {
     if (!currentStudent) {
-        showMessage('operationMessage', '❌ Сначала отсканируйте QR-код ученика', true);
+        showMessage('operationMessage', '❌ Сначала найдите ученика', true);
         return;
     }
     
@@ -172,17 +152,12 @@ async function subtractBalance() {
         }
     } catch (error) {
         console.error('Ошибка:', error);
-        showMessage('operationMessage', '⚠️ Ошибка сети. Проверьте подключение к интернету.', true);
+        showMessage('operationMessage', '⚠️ Ошибка сети', true);
     }
 }
 
 function logout() {
     currentStudent = null;
-    if (html5QrcodeScanner) {
-        html5QrcodeScanner.clear().catch(error => {
-            console.log('Сканер уже остановлен');
-        });
-    }
     document.getElementById('password').value = '';
     document.getElementById('studentInfo').style.display = 'none';
     document.getElementById('amount').value = '100';
@@ -204,3 +179,15 @@ document.getElementById('amount').addEventListener('keypress', function(e) {
 });
 
 console.log('🚀 SehriyoPay загружен!');
+}
+}};
+
+// Функция для ввода QR-кода из поля ввода
+function manualQRInputFromField() {
+    const qrCode = document.getElementById('manualQRInput').value.trim();
+    if (qrCode) {
+        fetchStudentInfo(qrCode);
+    } else {
+        showMessage('operationMessage', '❌ Введите QR-код', true);
+    }
+}
