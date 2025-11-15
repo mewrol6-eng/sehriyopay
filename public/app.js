@@ -53,7 +53,7 @@ async function initializeCamera() {
             fps: 10,
             qrbox: { width: 250, height: 250 },
             aspectRatio: 1.0,
-            facingMode: "environment" // задняя камера
+            facingMode: "environment"
         };
 
         // Запускаем камеру и сканирование
@@ -117,14 +117,7 @@ async function onScanSuccess(decodedText, decodedResult) {
             showMessage('operationMessage', '❌ Ученик не найден', true);
             // Перезапускаем камеру через 2 секунды
             setTimeout(() => {
-                if (html5Qrcode) {
-                    html5Qrcode.start(
-                        { facingMode: "environment" }, 
-                        { fps: 10, qrbox: { width: 250, height: 250 } }, 
-                        onScanSuccess, 
-                        onScanFailure
-                    );
-                }
+                restartCamera();
             }, 2000);
         }
     } catch (error) {
@@ -132,22 +125,31 @@ async function onScanSuccess(decodedText, decodedResult) {
         showMessage('operationMessage', '⚠️ Ошибка при обработке QR-кода', true);
         // Перезапускаем камеру через 2 секунды
         setTimeout(() => {
-            if (html5Qrcode) {
-                html5Qrcode.start(
-                    { facingMode: "environment" }, 
-                    { fps: 10, qrbox: { width: 250, height: 250 } }, 
-                    onScanSuccess, 
-                    onScanFailure
-                );
-            }
+            restartCamera();
         }, 2000);
+    }
+}
+
+// Перезапуск камеры
+async function restartCamera() {
+    if (html5Qrcode) {
+        try {
+            await html5Qrcode.start(
+                { facingMode: "environment" }, 
+                { fps: 10, qrbox: { width: 250, height: 250 } }, 
+                onScanSuccess, 
+                onScanFailure
+            );
+            showMessage('operationMessage', '✅ Камера перезапущена', false);
+        } catch (error) {
+            console.error('Ошибка перезапуска камеры:', error);
+        }
     }
 }
 
 // Ошибка сканирования
 function onScanFailure(error) {
     // Игнорируем обычные ошибки сканирования - это нормально
-    // Они происходят когда камера не видит QR-код
 }
 
 // Управление вспышкой
@@ -199,13 +201,14 @@ async function toggleFlash() {
 }
 
 // Остановка камеры
-function stopCamera() {
+async function stopCamera() {
     if (html5Qrcode) {
-        html5Qrcode.stop().then(() => {
+        try {
+            await html5Qrcode.stop();
             console.log('Камера остановлена');
-        }).catch((error) => {
+        } catch (error) {
             console.error('Ошибка остановки камеры:', error);
-        });
+        }
         html5Qrcode.clear();
         html5Qrcode = null;
     }
@@ -262,9 +265,7 @@ async function addBalance() {
             
             // Перезапускаем камеру для следующего сканирования
             setTimeout(() => {
-                if (!html5Qrcode) {
-                    initializeCamera();
-                }
+                restartCamera();
             }, 2000);
             
         } else {
@@ -313,9 +314,7 @@ async function subtractBalance() {
             
             // Перезапускаем камеру для следующего сканирования
             setTimeout(() => {
-                if (!html5Qrcode) {
-                    initializeCamera();
-                }
+                restartCamera();
             }, 2000);
             
         } else {
@@ -354,5 +353,13 @@ document.getElementById('amount').addEventListener('keypress', function(e) {
 window.addEventListener('beforeunload', function() {
     stopCamera();
 });
+
+// Ручной ввод QR-кода для тестирования
+function manualQRInput() {
+    const qrCode = prompt('Введите QR-код вручную:', 'TEST123');
+    if (qrCode) {
+        onScanSuccess(qrCode);
+    }
+}
 
 console.log('🚀 SehriyoPay загружен!');
