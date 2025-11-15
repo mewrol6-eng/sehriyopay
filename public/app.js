@@ -1,6 +1,5 @@
 let currentStudent = null;
 let html5QrcodeScanner = null;
-let currentCameraId = null;
 const SELLER_PASSWORD = 'school123';
 
 function showMessage(elementId, message, isError = false) {
@@ -42,7 +41,7 @@ function showScreen(screenId) {
 // Запуск камеры
 async function startCamera() {
     try {
-        showMessage('operationMessage', '🔄 Запускаю камеру...', false);
+        showMessage('operationMessage', '🔄 Запрашиваю доступ к камере...', false);
         
         // Создаем сканер
         html5QrcodeScanner = new Html5Qrcode("qr-reader");
@@ -54,37 +53,16 @@ async function startCamera() {
             aspectRatio: 1.0
         };
 
-        // Получаем список камер
-        const devices = await Html5Qrcode.getCameras();
-        if (devices && devices.length) {
-            // Ищем заднюю камеру
-            const backCamera = devices.find(device => 
-                device.label.toLowerCase().includes('back') || 
-                device.label.toLowerCase().includes('rear')
-            );
-            
-            currentCameraId = backCamera ? backCamera.id : devices[0].id;
-            
-            // Запускаем камеру
-            await html5QrcodeScanner.start(
-                currentCameraId, 
-                config, 
-                onScanSuccess, 
-                onScanFailure
-            );
-        } else {
-            // Если не удалось получить камеры, используем окружение
-            await html5QrcodeScanner.start(
-                { facingMode: "environment" }, 
-                config, 
-                onScanSuccess, 
-                onScanFailure
-            );
-        }
+        // Запускаем камеру с задней камерой по умолчанию
+        await html5QrcodeScanner.start(
+            { facingMode: "environment" }, 
+            config, 
+            onScanSuccess, 
+            onScanFailure
+        );
         
         // Показываем элементы управления камерой
         document.getElementById('cameraPermission').style.display = 'none';
-        document.getElementById('switchCameraBtn').style.display = 'block';
         document.getElementById('stopCameraBtn').style.display = 'block';
         document.getElementById('qr-reader').classList.add('camera-active');
         
@@ -102,55 +80,16 @@ async function startCamera() {
             errorMessage += 'Браузер не поддерживает сканирование QR-кодов.';
         } else if (error.name === 'NotReadableError') {
             errorMessage += 'Камера уже используется другим приложением.';
+        } else if (error.name === 'OverconstrainedError') {
+            errorMessage += 'Не удалось запустить заднюю камеру. Попробуйте другое устройство.';
         } else {
             errorMessage += error.message;
         }
         
         showMessage('operationMessage', errorMessage, true);
-    }
-}
-
-// Переключение камеры
-async function switchCamera() {
-    if (!html5QrcodeScanner) return;
-    
-    try {
-        showMessage('operationMessage', '🔄 Переключаю камеру...', false);
         
-        // Останавливаем текущую камеру
-        await html5QrcodeScanner.stop();
-        
-        // Получаем список камер
-        const devices = await Html5Qrcode.getCameras();
-        if (devices && devices.length > 1) {
-            // Находим следующую камеру
-            const currentIndex = devices.findIndex(device => device.id === currentCameraId);
-            const nextIndex = (currentIndex + 1) % devices.length;
-            currentCameraId = devices[nextIndex].id;
-            
-            // Запускаем новую камеру
-            const config = {
-                fps: 10,
-                qrbox: { width: 250, height: 250 },
-                aspectRatio: 1.0
-            };
-            
-            await html5QrcodeScanner.start(
-                currentCameraId, 
-                config, 
-                onScanSuccess, 
-                onScanFailure
-            );
-            
-            showMessage('operationMessage', '✅ Камера переключена', false);
-        } else {
-            showMessage('operationMessage', '❌ Доступна только одна камера', true);
-            // Перезапускаем текущую камеру
-            await startCamera();
-        }
-    } catch (error) {
-        console.error('Ошибка переключения камеры:', error);
-        showMessage('operationMessage', '❌ Ошибка переключения камеры', true);
+        // Показываем кнопку для повторной попытки
+        document.getElementById('cameraPermission').style.display = 'block';
     }
 }
 
@@ -161,11 +100,9 @@ async function stopCamera() {
             await html5QrcodeScanner.stop();
             html5QrcodeScanner.clear();
             html5QrcodeScanner = null;
-            currentCameraId = null;
             
             // Показываем сообщение о разрешении
             document.getElementById('cameraPermission').style.display = 'block';
-            document.getElementById('switchCameraBtn').style.display = 'none';
             document.getElementById('stopCameraBtn').style.display = 'none';
             document.getElementById('qr-reader').classList.remove('camera-active');
             
