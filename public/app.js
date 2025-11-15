@@ -1,11 +1,18 @@
 let currentStudent = null;
-let html5QrcodeScanner = null;
-let currentStream = null;
-let isFlashOn = false;
-
+let html5Qrcode = null;
 const SELLER_PASSWORD = 'school123';
 
-// Автоматически запрашиваем камеру при входе в сканер
+function showMessage(elementId, message, isError = false) {
+    const element = document.getElementById(elementId);
+    element.textContent = message;
+    element.className = `status-message ${isError ? 'error' : 'success'}`;
+    element.style.display = 'block';
+    
+    setTimeout(() => {
+        element.style.display = 'none';
+    }, 3000);
+}
+
 function checkPassword() {
     const password = document.getElementById('password').value;
     const messageElement = document.getElementById('passwordMessage');
@@ -19,22 +26,11 @@ function checkPassword() {
         showMessage('passwordMessage', '✅ Успешный вход!', false);
         setTimeout(() => {
             showScreen('scannerScreen');
-            requestCameraPermission();
+            initializeCamera();
         }, 1000);
     } else {
         showMessage('passwordMessage', '❌ Неверный пароль! Попробуйте снова.', true);
     }
-}
-
-function showMessage(elementId, message, isError = false) {
-    const element = document.getElementById(elementId);
-    element.textContent = message;
-    element.className = `status-message ${isError ? 'error' : 'success'}`;
-    element.style.display = 'block';
-    
-    setTimeout(() => {
-        element.style.display = 'none';
-    }, 3000);
 }
 
 function showScreen(screenId) {
@@ -44,142 +40,71 @@ function showScreen(screenId) {
     document.getElementById(screenId).classList.add('active');
 }
 
-// Запрос разрешения на камеру и запуск сканера
-async function requestCameraPermission() {
+// Инициализация камеры и сканирования
+async function initializeCamera() {
     try {
-        showMessage('operationMessage', '🔄 Запрашиваю доступ к камере...', false);
+        showMessage('operationMessage', '🔄 Запускаю камеру...', false);
         
-        // Сначала проверяем поддержку медиа устройств
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            throw new Error('Ваш браузер не поддерживает доступ к камере');
-        }
-
-        // Запрашиваем доступ к камере
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { 
-                facingMode: 'environment', // Предпочтительно задняя камера
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            } 
-        });
-
-        currentStream = stream;
+        // Создаем экземпляр сканера
+        html5Qrcode = new Html5Qrcode("qr-reader");
         
-        // Скрываем сообщение о разрешении
+        // Конфигурация камеры
+        const config = {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+            aspectRatio: 1.0,
+            facingMode: "environment" // задняя камера
+        };
+
+        // Запускаем камеру и сканирование
+        await html5Qrcode.start(
+            { facingMode: "environment" }, 
+            config, 
+            onScanSuccess, 
+            onScanFailure
+        );
+        
+        // Скрываем сообщение о разрешении и показываем камеру
         document.getElementById('cameraPermission').style.display = 'none';
-        
-        // Активируем кнопку вспышки
-        document.getElementById('flashToggleBtn').disabled = false;
         document.getElementById('qr-reader').classList.add('camera-active');
+        document.getElementById('flashToggleBtn').disabled = false;
         
-        showMessage('operationMessage', '✅ Камера активирована! Наведите на QR-код', false);
-        
-        // Запускаем сканер QR-кодов
-        initializeScanner(stream);
+        showMessage('operationMessage', '✅ Камера активна! Наведите на QR-код', false);
         
     } catch (error) {
-        console.error('Ошибка доступа к камере:', error);
-        let errorMessage = '❌ Не удалось получить доступ к камере. ';
+        console.error('Ошибка камеры:', error);
+        let errorMessage = '❌ Ошибка камеры: ';
         
         if (error.name === 'NotAllowedError') {
-            errorMessage += 'Разрешение было отклонено.';
+            errorMessage += 'Доступ к камере запрещен. Разрешите доступ в настройках браузера.';
         } else if (error.name === 'NotFoundError') {
             errorMessage += 'Камера не найдена.';
         } else if (error.name === 'NotSupportedError') {
-            errorMessage += 'Ваш браузер не поддерживает эту функцию.';
+            errorMessage += 'Браузер не поддерживает сканирование QR-кодов.';
+        } else if (error.name === 'NotReadableError') {
+            errorMessage += 'Камера уже используется другим приложением.';
         } else {
             errorMessage += error.message;
         }
         
         showMessage('operationMessage', errorMessage, true);
+        
+        // Показываем ручной ввод как запасной вариант
+        document.getElementById('cameraPermission').style.display = 'block';
     }
 }
 
-// Инициализация сканера QR-кодов
-function initializeScanner(stream) {
+// Успешное сканирование
+async function onScanSuccess(decodedText, decodedResult) {
+    console.log('✅ QR-код распознан:', decodedText);
+    
     try {
-        html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { 
-            fps: 10,
-            qrbox: { width: 250, height: 250 },
-            supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
-            showTorchButtonIfSupported: true
-        });
-
-        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
-        
-    } catch (error) {
-        console.error('Ошибка инициализации сканера:', error);
-        showMessage('operationMessage', '❌ Ошибка запуска сканера QR-кодов', true);
-    }
-}
-
-// Управление вспышкой
-async function toggleFlash() {
-    if (!currentStream) {
-        showMessage('operationMessage', '❌ Сначала включите камеру', true);
-        return;
-    }
-
-    try {
-        const videoTrack = currentStream.getVideoTracks()[0];
-        
-        if (!videoTrack) {
-            throw new Error('Видео поток не найден');
-        }
-
-        // Пытаемся управлять вспышкой через ImageCapture API
-        const imageCapture = new ImageCapture(videoTrack);
-        const capabilities = videoTrack.getCapabilities();
-        
-        if (capabilities.torch) {
-            isFlashOn = !isFlashOn;
-            await videoTrack.applyConstraints({
-                advanced: [{ torch: isFlashOn }]
-            });
-            
-            const flashBtn = document.getElementById('flashToggleBtn');
-            flashBtn.textContent = isFlashOn ? '💡 Выключить вспышку' : '🔦 Включить вспышку';
-            flashBtn.classList.toggle('btn-success', isFlashOn);
-            flashBtn.classList.toggle('btn-warning', !isFlashOn);
-            
-            showMessage('operationMessage', isFlashOn ? '💡 Вспышка включена' : '🔦 Вспышка выключена', false);
-        } else {
-            showMessage('operationMessage', '❌ Ваше устройство не поддерживает управление вспышкой', true);
+        // Временно останавливаем сканирование чтобы избежать повторных срабатываний
+        if (html5Qrcode) {
+            await html5Qrcode.stop();
         }
         
-    } catch (error) {
-        console.error('Ошибка управления вспышкой:', error);
-        showMessage('operationMessage', '❌ Не удалось управлять вспышкой', true);
-    }
-}
-
-// Остановка камеры
-function stopCamera() {
-    if (currentStream) {
-        currentStream.getTracks().forEach(track => track.stop());
-        currentStream = null;
-    }
-    
-    if (html5QrcodeScanner) {
-        html5QrcodeScanner.clear();
-        html5QrcodeScanner = null;
-    }
-    
-    // Показываем сообщение о разрешении снова
-    document.getElementById('cameraPermission').style.display = 'block';
-    document.getElementById('flashToggleBtn').disabled = true;
-    document.getElementById('qr-reader').classList.remove('camera-active');
-    document.getElementById('flashToggleBtn').textContent = '🔦 Включить вспышку';
-    document.getElementById('flashToggleBtn').classList.remove('btn-success');
-    document.getElementById('flashToggleBtn').classList.add('btn-warning');
-    
-    showMessage('operationMessage', '⏹️ Камера остановлена', false);
-}
-
-// Обработка успешного сканирования
-async function onScanSuccess(decodedText) {
-    try {
-        console.log('📱 Сканирован QR-код:', decodedText);
+        showMessage('operationMessage', '📱 Обрабатываю QR-код...', false);
         
         const response = await fetch(`/api/student/${decodedText}`);
         const student = await response.json();
@@ -189,20 +114,111 @@ async function onScanSuccess(decodedText) {
             displayStudentInfo(student);
             showMessage('operationMessage', '✅ Ученик найден!', false);
         } else {
-            showMessage('operationMessage', '❌ Ученик не найден в системе', true);
+            showMessage('operationMessage', '❌ Ученик не найден', true);
+            // Перезапускаем камеру через 2 секунды
+            setTimeout(() => {
+                if (html5Qrcode) {
+                    html5Qrcode.start(
+                        { facingMode: "environment" }, 
+                        { fps: 10, qrbox: { width: 250, height: 250 } }, 
+                        onScanSuccess, 
+                        onScanFailure
+                    );
+                }
+            }, 2000);
         }
     } catch (error) {
         console.error('Ошибка:', error);
-        showMessage('operationMessage', '⚠️ Ошибка сети. Проверьте подключение к интернету.', true);
+        showMessage('operationMessage', '⚠️ Ошибка при обработке QR-кода', true);
+        // Перезапускаем камеру через 2 секунды
+        setTimeout(() => {
+            if (html5Qrcode) {
+                html5Qrcode.start(
+                    { facingMode: "environment" }, 
+                    { fps: 10, qrbox: { width: 250, height: 250 } }, 
+                    onScanSuccess, 
+                    onScanFailure
+                );
+            }
+        }, 2000);
     }
 }
 
-// Обработка ошибок сканирования
+// Ошибка сканирования
 function onScanFailure(error) {
-    // Игнорируем частые ошибки сканирования - это нормально
-    if (!error.includes('No MultiFormat Readers')) {
-        console.log('Ошибка сканирования:', error);
+    // Игнорируем обычные ошибки сканирования - это нормально
+    // Они происходят когда камера не видит QR-код
+}
+
+// Управление вспышкой
+async function toggleFlash() {
+    if (!html5Qrcode) {
+        showMessage('operationMessage', '❌ Сначала включите камеру', true);
+        return;
     }
+
+    try {
+        // Получаем видеопоток
+        const videoElement = document.querySelector('#qr-reader video');
+        if (!videoElement) {
+            throw new Error('Видео элемент не найден');
+        }
+
+        const stream = videoElement.srcObject;
+        if (!stream) {
+            throw new Error('Видеопоток не найден');
+        }
+
+        const track = stream.getVideoTracks()[0];
+        if (!track) {
+            throw new Error('Видеотрек не найден');
+        }
+
+        // Пытаемся управлять вспышкой
+        const capabilities = track.getCapabilities();
+        if (capabilities.torch) {
+            const torch = !track.getSettings().torch;
+            await track.applyConstraints({
+                advanced: [{ torch: torch }]
+            });
+            
+            const flashBtn = document.getElementById('flashToggleBtn');
+            flashBtn.textContent = torch ? '💡 Выключить вспышку' : '🔦 Включить вспышку';
+            flashBtn.classList.toggle('btn-success', torch);
+            flashBtn.classList.toggle('btn-warning', !torch);
+            
+            showMessage('operationMessage', torch ? '💡 Вспышка включена' : '🔦 Вспышка выключена', false);
+        } else {
+            showMessage('operationMessage', '❌ Ваше устройство не поддерживает вспышку', true);
+        }
+        
+    } catch (error) {
+        console.error('Ошибка вспышки:', error);
+        showMessage('operationMessage', '❌ Не удалось управлять вспышкой', true);
+    }
+}
+
+// Остановка камеры
+function stopCamera() {
+    if (html5Qrcode) {
+        html5Qrcode.stop().then(() => {
+            console.log('Камера остановлена');
+        }).catch((error) => {
+            console.error('Ошибка остановки камеры:', error);
+        });
+        html5Qrcode.clear();
+        html5Qrcode = null;
+    }
+    
+    // Показываем сообщение о разрешении
+    document.getElementById('cameraPermission').style.display = 'block';
+    document.getElementById('flashToggleBtn').disabled = true;
+    document.getElementById('qr-reader').classList.remove('camera-active');
+    document.getElementById('flashToggleBtn').textContent = '🔦 Включить вспышку';
+    document.getElementById('flashToggleBtn').classList.remove('btn-success');
+    document.getElementById('flashToggleBtn').classList.add('btn-warning');
+    
+    showMessage('operationMessage', '⏹️ Камера остановлена', false);
 }
 
 function displayStudentInfo(student) {
@@ -243,12 +259,20 @@ async function addBalance() {
             showMessage('operationMessage', `✅ Баланс пополнен на ${amount} баллов`, false);
             currentStudent.balance = result.newBalance;
             displayStudentInfo(currentStudent);
+            
+            // Перезапускаем камеру для следующего сканирования
+            setTimeout(() => {
+                if (!html5Qrcode) {
+                    initializeCamera();
+                }
+            }, 2000);
+            
         } else {
             showMessage('operationMessage', '❌ Ошибка: ' + result.error, true);
         }
     } catch (error) {
         console.error('Ошибка:', error);
-        showMessage('operationMessage', '⚠️ Ошибка сети. Проверьте подключение к интернету.', true);
+        showMessage('operationMessage', '⚠️ Ошибка сети', true);
     }
 }
 
@@ -286,12 +310,20 @@ async function subtractBalance() {
             showMessage('operationMessage', `✅ Списано ${amount} баллов`, false);
             currentStudent.balance = result.newBalance;
             displayStudentInfo(currentStudent);
+            
+            // Перезапускаем камеру для следующего сканирования
+            setTimeout(() => {
+                if (!html5Qrcode) {
+                    initializeCamera();
+                }
+            }, 2000);
+            
         } else {
             showMessage('operationMessage', '❌ Ошибка: ' + result.error, true);
         }
     } catch (error) {
         console.error('Ошибка:', error);
-        showMessage('operationMessage', '⚠️ Ошибка сети. Проверьте подключение к интернету.', true);
+        showMessage('operationMessage', '⚠️ Ошибка сети', true);
     }
 }
 
