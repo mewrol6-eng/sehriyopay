@@ -153,7 +153,7 @@
             border: 2px dashed #e5e7eb;
             border-radius: 10px;
             padding: 10px;
-            min-height: 300px;
+            min-height: 250px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -305,10 +305,7 @@
             width: 100% !important;
             height: auto !important;
             border-radius: 8px;
-        }
-        
-        #qr-reader__dashboard {
-            display: none;
+            max-height: 300px;
         }
     </style>
 </head>
@@ -336,7 +333,7 @@
             <div id="qr-reader">
                 <div class="camera-permission" id="cameraPermission">
                     <h3>📸 Доступ к камере</h3>
-                    <p>Для сканирования QR-кодов необходимо разрешить доступ к камере</p>
+                    <p>Нажмите кнопку ниже чтобы включить камеру для сканирования QR-кодов</p>
                     <button class="btn btn-success" onclick="startCamera()">
                         🎥 Включить камеру
                     </button>
@@ -344,9 +341,6 @@
             </div>
             
             <div class="camera-controls">
-                <button class="btn btn-info" id="switchCameraBtn" onclick="switchCamera()" style="display: none;">
-                    🔄 Переключить камеру
-                </button>
                 <button class="btn btn-warning" id="stopCameraBtn" onclick="stopCamera()" style="display: none;">
                     ⏹️ Остановить камеру
                 </button>
