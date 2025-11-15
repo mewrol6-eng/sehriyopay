@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SehriyoPay - Школьная оплата</title>
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -139,25 +138,23 @@
             background: #4b5563;
         }
         
-        .btn-info {
-            background: #3b82f6;
-        }
-        
-        .btn-info:hover {
-            background: #2563eb;
-        }
-        
-        #qr-reader {
+        #camera-container {
             width: 100%;
             margin: 20px 0;
             border: 2px dashed #e5e7eb;
             border-radius: 10px;
             padding: 10px;
-            min-height: 250px;
+            min-height: 300px;
             display: flex;
             align-items: center;
             justify-content: center;
             background: #f8fafc;
+        }
+        
+        #camera-video {
+            width: 100%;
+            border-radius: 8px;
+            display: none;
         }
         
         .camera-permission {
@@ -301,11 +298,8 @@
             background: #f0fdf4 !important;
         }
         
-        #qr-reader video {
-            width: 100% !important;
-            height: auto !important;
-            border-radius: 8px;
-            max-height: 300px;
+        #canvas {
+            display: none;
         }
     </style>
 </head>
@@ -313,7 +307,7 @@
     <div class="container">
         <div class="header">
             <h1>🏫 SehriyoPay</h1>
-            <p>Школьная система безналичной оплаты</p>
+            <p>Школьная система безналичной оплата</p>
         </div>
         
         <!-- Экран ввода пароля -->
@@ -330,7 +324,7 @@
         <div class="screen" id="scannerScreen">
             <h3 style="text-align: center; margin-bottom: 20px; color: #374151;">📷 Сканирование QR-кода</h3>
             
-            <div id="qr-reader">
+            <div id="camera-container">
                 <div class="camera-permission" id="cameraPermission">
                     <h3>📸 Доступ к камере</h3>
                     <p>Нажмите кнопку ниже чтобы включить камеру для сканирования QR-кодов</p>
@@ -338,6 +332,8 @@
                         🎥 Включить камеру
                     </button>
                 </div>
+                <video id="camera-video" autoplay playsinline></video>
+                <canvas id="canvas"></canvas>
             </div>
             
             <div class="camera-controls">
@@ -394,6 +390,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
