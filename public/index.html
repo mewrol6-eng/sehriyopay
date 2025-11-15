@@ -145,6 +145,26 @@
             border: 2px dashed #e5e7eb;
             border-radius: 10px;
             padding: 10px;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8fafc;
+        }
+        
+        .camera-permission {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .camera-permission h3 {
+            margin-bottom: 15px;
+            color: #374151;
+        }
+        
+        .camera-permission p {
+            color: #6b7280;
+            margin-bottom: 20px;
         }
         
         .student-card {
@@ -247,6 +267,21 @@
             color: #991b1b;
             border: 1px solid #fca5a5;
         }
+        
+        .flash-controls {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .flash-btn {
+            flex: 1;
+        }
+        
+        .camera-active {
+            border-color: #10b981 !important;
+            background: #f0fdf4 !important;
+        }
     </style>
 </head>
 <body>
@@ -270,11 +305,24 @@
         <div class="screen" id="scannerScreen">
             <h3 style="text-align: center; margin-bottom: 20px; color: #374151;">📷 Сканируйте QR-код ученика</h3>
             
-            <div id="qr-reader"></div>
+            <div id="qr-reader">
+                <div class="camera-permission" id="cameraPermission">
+                    <h3>📸 Доступ к камере</h3>
+                    <p>Для сканирования QR-кодов необходимо разрешить доступ к камере</p>
+                    <button class="btn btn-success" onclick="requestCameraPermission()">
+                        🎥 Разрешить камеру
+                    </button>
+                </div>
+            </div>
             
-            <button class="btn btn-warning" id="flashBtn">
-                🔦 Включить вспышку
-            </button>
+            <div class="flash-controls">
+                <button class="btn btn-warning flash-btn" id="flashToggleBtn" onclick="toggleFlash()" disabled>
+                    🔦 Включить вспышку
+                </button>
+                <button class="btn btn-secondary flash-btn" id="stopCameraBtn" onclick="stopCamera()">
+                    ⏹️ Остановить камеру
+                </button>
+            </div>
             
             <div class="student-card" id="studentInfo">
                 <h4 style="text-align: center; margin-bottom: 20px; color: #374151;">👨‍🎓 Информация об ученике</h4>
@@ -310,4 +358,4 @@
 
     <script src="app.js"></script>
 </body>
-</html>
+</html>>
