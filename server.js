@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
-const QRCode = require('qrcode');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -128,7 +127,7 @@ app.post('/api/student/:id/add', async (req, res) => {
     }
 });
 
-// Списать эльки
+// Списать элек
 app.post('/api/student/:id/subtract', async (req, res) => {
     try {
         const studentId = req.params.id;
@@ -163,7 +162,7 @@ app.post('/api/student/:id/subtract', async (req, res) => {
                     
                     // Записываем транзакцию
                     db.run(`INSERT INTO transactions (student_id, type, amount, description) VALUES (?, ?, ?, ?)`,
-                        [studentId, 'subtract', amount, 'Списание эльков']);
+                        [studentId, 'subtract', amount, 'Списание элек']);
                     
                     // Получаем обновленные данные ученика
                     db.get(`SELECT * FROM students WHERE id = ?`, [studentId], (err, updatedStudent) => {
@@ -185,8 +184,6 @@ app.post('/api/student/:id/subtract', async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
-
-// ==================== TELEGRAM BOT ENDPOINTS ====================
 
 // Получить всех учеников
 app.get('/api/students', async (req, res) => {
@@ -311,58 +308,6 @@ app.get('/api/transactions', async (req, res) => {
     } catch (error) {
         console.error('Server error:', error);
         res.status(500).json({ error: 'Server error' });
-    }
-});
-
-// Генератор QR-кода
-app.get('/api/qr/:qrCode', async (req, res) => {
-    try {
-        const { qrCode } = req.params;
-        
-        // Генерируем QR-код
-        const qrCodeDataURL = await QRCode.toDataURL(qrCode, {
-            width: 300,
-            margin: 2,
-            color: {
-                dark: '#000000',
-                light: '#FFFFFF'
-            }
-        });
-        
-        // Отправляем QR-код как base64 изображение
-        res.json({ 
-            success: true, 
-            qrCode: qrCodeDataURL,
-            downloadUrl: `${req.protocol}://${req.get('host')}/api/qr-download/${qrCode}`
-        });
-        
-    } catch (error) {
-        console.error('QR generation error:', error);
-        res.status(500).json({ error: 'QR generation failed' });
-    }
-});
-
-// Скачивание QR-кода
-app.get('/api/qr-download/:qrCode', async (req, res) => {
-    try {
-        const { qrCode } = req.params;
-        
-        const qrBuffer = await QRCode.toBuffer(qrCode, {
-            width: 300,
-            margin: 2,
-            color: {
-                dark: '#000000',
-                light: '#FFFFFF'
-            }
-        });
-        
-        res.setHeader('Content-Type', 'image/png');
-        res.setHeader('Content-Disposition', `attachment; filename="qr-${qrCode}.png"`);
-        res.send(qrBuffer);
-        
-    } catch (error) {
-        console.error('QR download error:', error);
-        res.status(500).json({ error: 'QR download failed' });
     }
 });
 
