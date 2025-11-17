@@ -44,9 +44,6 @@
         }
         
         .admin-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
             background: rgba(255,255,255,0.2);
             border: none;
             color: white;
@@ -54,6 +51,7 @@
             border-radius: 20px;
             cursor: pointer;
             font-size: 12px;
+            margin-top: 10px;
         }
         
         .screen {
@@ -408,13 +406,77 @@
         .back-btn:hover {
             background: #4b5563;
         }
+        
+        .transactions-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 15px 0;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        
+        .transaction-item {
+            padding: 10px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+        
+        .transaction-positive {
+            color: #059669;
+            font-weight: bold;
+        }
+        
+        .transaction-negative {
+            color: #dc2626;
+            font-weight: bold;
+        }
+        
+        .transaction-info {
+            flex: 1;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            background: #e5e7eb;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .tab-btn.active {
+            background: #4f46e5;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>Sehriyo pay</h1>
-            <button class="admin-btn" onclick="showScreen('adminScreen')">⚙️ Админ</button>
+            <button class="admin-btn" id="adminBtn" style="display: none;" onclick="showScreen('adminScreen')">⚙️ Админ панель</button>
         </div>
         
         <!-- Экран ввода пароля -->
@@ -493,34 +555,67 @@
         
         <!-- Админ панель -->
         <div class="screen" id="adminScreen">
-            <button class="btn back-btn" onclick="showScreen('scannerScreen')">← Назад</button>
+            <button class="btn back-btn" onclick="showScreen('scannerScreen')">← Назад к сканеру</button>
             <h3 style="text-align: center; margin-bottom: 20px; color: #374151;">⚙️ Панель администратора</h3>
             
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="switchTab('studentsTab')">👥 Ученики</button>
+                <button class="tab-btn" onclick="switchTab('transactionsTab')">📊 Операции</button>
+            </div>
+            
+            <!-- Вкладка учеников -->
+            <div class="tab-content active" id="studentsTab">
+                <div class="admin-panel">
+                    <h4>👥 Управление учениками</h4>
+                    
+                    <div class="input-group">
+                        <label for="newStudentName">Имя и фамилия:</label>
+                        <input type="text" id="newStudentName" placeholder="Саидамир Асходжаев">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="newStudentClass">Класс:</label>
+                        <input type="text" id="newStudentClass" placeholder="9-Д">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="newStudentId">ID ученика (для QR):</label>
+                        <input type="text" id="newStudentId" placeholder="0001">
+                    </div>
+                    
+                    <button class="btn btn-success" onclick="addNewStudent()">➕ Добавить ученика</button>
+                    
+                    <div class="student-list" id="studentsList">
+                        <!-- Список учеников будет здесь -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Вкладка операций -->
+            <div class="tab-content" id="transactionsTab">
+                <div class="admin-panel">
+                    <h4>📊 История операций</h4>
+                    
+                    <div class="input-group">
+                        <label>Фильтр по ученику:</label>
+                        <select id="transactionFilter" onchange="filterTransactions()">
+                            <option value="all">Все ученики</option>
+                            <!-- Опции будут добавлены динамически -->
+                        </select>
+                    </div>
+                    
+                    <div class="transactions-list" id="transactionsList">
+                        <!-- Список операций будет здесь -->
+                    </div>
+                    
+                    <button class="btn btn-secondary" onclick="exportTransactions()">💾 Экспорт операций</button>
+                    <button class="btn btn-warning" onclick="clearTransactions()">🗑️ Очистить историю</button>
+                </div>
+            </div>
+            
             <div class="admin-panel">
-                <h4>👥 Управление учениками</h4>
-                
-                <div class="input-group">
-                    <label for="newStudentName">Имя и фамилия:</label>
-                    <input type="text" id="newStudentName" placeholder="Иван Иванов">
-                </div>
-                
-                <div class="input-group">
-                    <label for="newStudentClass">Класс:</label>
-                    <input type="text" id="newStudentClass" placeholder="10-А">
-                </div>
-                
-                <div class="input-group">
-                    <label for="newStudentId">ID ученика (для QR):</label>
-                    <input type="text" id="newStudentId" placeholder="0001">
-                </div>
-                
-                <button class="btn btn-success" onclick="addNewStudent()">➕ Добавить ученика</button>
-                
-                <div class="student-list" id="studentsList">
-                    <!-- Список учеников будет здесь -->
-                </div>
-                
-                <button class="btn btn-secondary" onclick="exportData()">💾 Экспорт данных</button>
+                <h4>📁 Управление данными</h4>
+                <button class="btn btn-secondary" onclick="exportData()">💾 Экспорт всех данных</button>
                 <button class="btn btn-warning" onclick="importData()">📁 Импорт данных</button>
                 <input type="file" id="importFile" style="display: none;" accept=".json">
             </div>
@@ -531,10 +626,10 @@
     <script>
         // Конфигурация
         const SELLER_PASSWORD = 'school123';
-        const ADMIN_PASSWORD = 'admin123';
         
         // Данные приложения
         let students = JSON.parse(localStorage.getItem('sehriyoStudents')) || {};
+        let transactions = JSON.parse(localStorage.getItem('sehriyoTransactions')) || [];
         let currentStudent = null;
         let stream = null;
         let animationFrame = null;
@@ -546,9 +641,11 @@
         function initializeDemoData() {
             if (Object.keys(students).length === 0) {
                 students = {
-                    '0001': { id: '0001', firstName: 'Алишер', lastName: 'Умаров', class: '10-A', balance: 500 },
-                    '0002': { id: '0002', firstName: 'Мария', lastName: 'Иванова', class: '9-B', balance: 300 },
-                    '0003': { id: '0003', firstName: 'Дмитрий', lastName: 'Петров', class: '11-C', balance: 700 }
+                    '0001': { id: '0001', firstName: 'Саидамир', lastName: 'Асходжаев', class: '9-Д', balance: 500 },
+                    '0002': { id: '0002', firstName: 'Тест1', lastName: '', class: '9-Д', balance: 300 },
+                    '0003': { id: '0003', firstName: 'Тест2', lastName: '', class: '9-Д', balance: 700 },
+                    '0004': { id: '0004', firstName: 'Тест3', lastName: '', class: '9-Д', balance: 400 },
+                    '0005': { id: '0005', firstName: 'Тест4', lastName: '', class: '9-Д', balance: 600 }
                 };
                 saveStudents();
             }
@@ -557,6 +654,10 @@
         // Сохранение данных
         function saveStudents() {
             localStorage.setItem('sehriyoStudents', JSON.stringify(students));
+        }
+
+        function saveTransactions() {
+            localStorage.setItem('sehriyoTransactions', JSON.stringify(transactions));
         }
 
         // Показать сообщение
@@ -580,7 +681,7 @@
                 return;
             }
             
-            if (password === SELLER_PASSWORD || password === ADMIN_PASSWORD) {
+            if (password === SELLER_PASSWORD) {
                 showMessage('passwordMessage', '✅ Успешный вход!', false);
                 initializeDemoData();
                 setTimeout(() => {
@@ -601,9 +702,30 @@
             });
             document.getElementById(screenId).classList.add('active');
             
+            // Показываем/скрываем кнопку админа
+            if (screenId === 'passwordScreen') {
+                document.getElementById('adminBtn').style.display = 'none';
+            } else {
+                document.getElementById('adminBtn').style.display = 'block';
+            }
+            
             if (screenId === 'adminScreen') {
                 renderStudentsList();
+                renderTransactionsList();
             }
+        }
+
+        // Переключение вкладок
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
         }
 
         // Запуск камеры
@@ -712,7 +834,7 @@
                     
                     context.drawImage(video, 0, 0, canvas.width, canvas.height);
                     const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                    const code = jsQR(imageData.data, imageData.width, imageData.height);
+                    const code = jsQR(imageData.data, imageData.width, canvas.height);
                     
                     if (code) {
                         console.log('✅ Найден QR-код:', code.data);
@@ -790,6 +912,29 @@
             document.getElementById('studentInfo').scrollIntoView({ behavior: 'smooth' });
         }
 
+        // Добавление транзакции
+        function addTransaction(studentId, type, amount, oldBalance, newBalance) {
+            const student = students[studentId];
+            const transaction = {
+                id: Date.now(),
+                studentId: studentId,
+                studentName: `${student.firstName} ${student.lastName}`,
+                studentClass: student.class,
+                type: type, // 'add' или 'subtract'
+                amount: amount,
+                oldBalance: oldBalance,
+                newBalance: newBalance,
+                date: new Date().toLocaleDateString('ru-RU'),
+                time: new Date().toLocaleTimeString('ru-RU')
+            };
+            
+            transactions.unshift(transaction); // Добавляем в начало
+            if (transactions.length > 1000) {
+                transactions = transactions.slice(0, 1000); // Ограничиваем историю
+            }
+            saveTransactions();
+        }
+
         // Пополнение баланса
         function addBalance() {
             if (!currentStudent) {
@@ -803,9 +948,12 @@
                 return;
             }
 
+            const oldBalance = currentStudent.balance;
             currentStudent.balance += amount;
             saveStudents();
             displayStudentInfo(currentStudent);
+            
+            addTransaction(currentStudent.id, 'add', amount, oldBalance, currentStudent.balance);
             showMessage('operationMessage', `✅ Баланс пополнен на ${amount} элек`, false);
         }
 
@@ -827,9 +975,12 @@
                 return;
             }
 
+            const oldBalance = currentStudent.balance;
             currentStudent.balance -= amount;
             saveStudents();
             displayStudentInfo(currentStudent);
+            
+            addTransaction(currentStudent.id, 'subtract', amount, oldBalance, currentStudent.balance);
             showMessage('operationMessage', `✅ Списано ${amount} элек`, false);
         }
 
@@ -920,14 +1071,95 @@
             }
         }
 
-        // Экспорт данных
-        function exportData() {
-            const dataStr = JSON.stringify(students, null, 2);
+        // Админ: отображение списка операций
+        function renderTransactionsList(filterStudentId = 'all') {
+            const list = document.getElementById('transactionsList');
+            const filterSelect = document.getElementById('transactionFilter');
+            
+            // Обновляем фильтр учеников
+            filterSelect.innerHTML = '<option value="all">Все ученики</option>';
+            Object.values(students).forEach(student => {
+                filterSelect.innerHTML += `<option value="${student.id}">${student.firstName} ${student.lastName} (${student.class})</option>`;
+            });
+            filterSelect.value = filterStudentId;
+            
+            // Фильтруем транзакции
+            let filteredTransactions = transactions;
+            if (filterStudentId !== 'all') {
+                filteredTransactions = transactions.filter(t => t.studentId === filterStudentId);
+            }
+            
+            // Отображаем транзакции
+            list.innerHTML = '';
+            
+            if (filteredTransactions.length === 0) {
+                list.innerHTML = '<div style="text-align: center; padding: 20px; color: #6b7280;">Нет операций</div>';
+                return;
+            }
+            
+            filteredTransactions.forEach(transaction => {
+                const item = document.createElement('div');
+                item.className = 'transaction-item';
+                
+                const amountClass = transaction.type === 'add' ? 'transaction-positive' : 'transaction-negative';
+                const amountSign = transaction.type === 'add' ? '+' : '-';
+                const typeText = transaction.type === 'add' ? 'Пополнение' : 'Списание';
+                
+                item.innerHTML = `
+                    <div class="transaction-info">
+                        <div><strong>${transaction.studentName}</strong> (${transaction.studentClass})</div>
+                        <div>${typeText} • ${transaction.date} ${transaction.time}</div>
+                        <div>Баланс: ${transaction.oldBalance} → ${transaction.newBalance} элек</div>
+                    </div>
+                    <div class="${amountClass}">
+                        ${amountSign}${transaction.amount} элек
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        // Фильтрация операций
+        function filterTransactions() {
+            const filterStudentId = document.getElementById('transactionFilter').value;
+            renderTransactionsList(filterStudentId);
+        }
+
+        // Экспорт операций
+        function exportTransactions() {
+            const dataStr = JSON.stringify(transactions, null, 2);
             const dataBlob = new Blob([dataStr], {type: 'application/json'});
             
             const link = document.createElement('a');
             link.href = URL.createObjectURL(dataBlob);
-            link.download = 'sehriyo_students_backup.json';
+            link.download = `sehriyo_transactions_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+        }
+
+        // Очистка истории операций
+        function clearTransactions() {
+            if (confirm('Очистить всю историю операций? Это действие нельзя отменить.')) {
+                transactions = [];
+                saveTransactions();
+                renderTransactionsList();
+                alert('История операций очищена!');
+            }
+        }
+
+        // Экспорт всех данных
+        function exportData() {
+            const allData = {
+                students: students,
+                transactions: transactions,
+                exportDate: new Date().toISOString()
+            };
+            
+            const dataStr = JSON.stringify(allData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `sehriyo_full_backup_${new Date().toISOString().split('T')[0]}.json`;
             link.click();
         }
 
@@ -945,9 +1177,19 @@
             reader.onload = function(e) {
                 try {
                     const importedData = JSON.parse(e.target.result);
-                    students = importedData;
-                    saveStudents();
+                    
+                    if (importedData.students) {
+                        students = importedData.students;
+                        saveStudents();
+                    }
+                    
+                    if (importedData.transactions) {
+                        transactions = importedData.transactions;
+                        saveTransactions();
+                    }
+                    
                     renderStudentsList();
+                    renderTransactionsList();
                     alert('✅ Данные успешно импортированы!');
                 } catch (error) {
                     alert('❌ Ошибка при импорте данных!');
