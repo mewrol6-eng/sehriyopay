@@ -138,40 +138,6 @@
             background: #4b5563;
         }
         
-        #camera-container {
-            width: 100%;
-            margin: 20px 0;
-            border: 2px dashed #e5e7eb;
-            border-radius: 10px;
-            padding: 10px;
-            min-height: 300px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #f8fafc;
-        }
-        
-        #camera-video {
-            width: 100%;
-            border-radius: 8px;
-            display: none;
-        }
-        
-        .camera-permission {
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .camera-permission h3 {
-            margin-bottom: 15px;
-            color: #374151;
-        }
-        
-        .camera-permission p {
-            color: #6b7280;
-            margin-bottom: 20px;
-        }
-        
         .student-card {
             background: #f8fafc;
             border: 2px solid #e2e8f0;
@@ -283,23 +249,11 @@
             color: #6b7280;
         }
         
-        .camera-controls {
-            display: flex;
-            gap: 10px;
-            margin: 15px 0;
-        }
-        
-        .camera-controls .btn {
-            flex: 1;
-        }
-        
-        .camera-active {
-            border-color: #10b981 !important;
-            background: #f0fdf4 !important;
-        }
-        
-        #canvas {
-            display: none;
+        .manual-section {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
         }
     </style>
 </head>
@@ -307,7 +261,7 @@
     <div class="container">
         <div class="header">
             <h1>🏫 SehriyoPay</h1>
-            <p>Школьная система безналичной оплата</p>
+            <p>Школьная система безналичной оплаты</p>
         </div>
         
         <!-- Экран ввода пароля -->
@@ -320,30 +274,12 @@
             <div class="status-message" id="passwordMessage"></div>
         </div>
         
-        <!-- Экран сканирования -->
+        <!-- Экран управления -->
         <div class="screen" id="scannerScreen">
-            <h3 style="text-align: center; margin-bottom: 20px; color: #374151;">📷 Сканирование QR-кода</h3>
+            <h3 style="text-align: center; margin-bottom: 20px; color: #374151;">🎯 Управление балансами</h3>
             
-            <div id="camera-container">
-                <div class="camera-permission" id="cameraPermission">
-                    <h3>📸 Доступ к камере</h3>
-                    <p>Нажмите кнопку ниже чтобы включить камеру для сканирования QR-кодов</p>
-                    <button class="btn btn-success" onclick="startCamera()">
-                        🎥 Включить камеру
-                    </button>
-                </div>
-                <video id="camera-video" autoplay playsinline></video>
-                <canvas id="canvas"></canvas>
-            </div>
-            
-            <div class="camera-controls">
-                <button class="btn btn-warning" id="stopCameraBtn" onclick="stopCamera()" style="display: none;">
-                    ⏹️ Остановить камеру
-                </button>
-            </div>
-            
-            <div class="qr-input-section">
-                <p>Или введите QR-код вручную</p>
+            <div class="manual-section">
+                <h4 style="margin-bottom: 15px; color: #4f46e5;">🔍 Поиск ученика по QR-коду</h4>
                 
                 <div class="input-group">
                     <input type="text" id="manualQRInput" placeholder="Введите QR-код (например: TEST123)" style="text-align: center;">
@@ -353,8 +289,12 @@
                     🔍 Найти ученика
                 </button>
                 
-                <button class="btn btn-warning" onclick="manualQRInput()">
-                    📝 Быстрый ввод (TEST123)
+                <button class="btn btn-warning" onclick="manualQRInput('TEST123')">
+                    📝 Тест: Иван Иванов
+                </button>
+                
+                <button class="btn btn-warning" onclick="manualQRInput('TEST456')">
+                    📝 Тест: Мария Петрова
                 </button>
             </div>
             
@@ -390,7 +330,201 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-    <script src="app.js"></script>
+    <script>
+        let currentStudent = null;
+        const SELLER_PASSWORD = 'school123';
+
+        function showMessage(elementId, message, isError = false) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status-message ${isError ? 'error' : 'success'}`;
+            element.style.display = 'block';
+            
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 3000);
+        }
+
+        function checkPassword() {
+            const password = document.getElementById('password').value;
+            
+            if (!password) {
+                showMessage('passwordMessage', '❌ Введите пароль', true);
+                return;
+            }
+            
+            if (password === SELLER_PASSWORD) {
+                showMessage('passwordMessage', '✅ Успешный вход!', false);
+                setTimeout(() => {
+                    showScreen('scannerScreen');
+                }, 1000);
+            } else {
+                showMessage('passwordMessage', '❌ Неверный пароль! Попробуйте снова.', true);
+            }
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function manualQRInputFromField() {
+            const qrCode = document.getElementById('manualQRInput').value.trim();
+            if (qrCode) {
+                fetchStudentInfo(qrCode);
+            } else {
+                showMessage('operationMessage', '❌ Введите QR-код', true);
+            }
+        }
+
+        function manualQRInput(qrCode) {
+            document.getElementById('manualQRInput').value = qrCode;
+            fetchStudentInfo(qrCode);
+        }
+
+        async function fetchStudentInfo(qrCode) {
+            try {
+                showMessage('operationMessage', '🔄 Поиск ученика...', false);
+                
+                const response = await fetch(`/api/student/${qrCode}`);
+                const student = await response.json();
+                
+                if (student && !student.error) {
+                    currentStudent = student;
+                    displayStudentInfo(student);
+                    showMessage('operationMessage', '✅ Ученик найден!', false);
+                } else {
+                    showMessage('operationMessage', '❌ Ученик не найден', true);
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                showMessage('operationMessage', '⚠️ Ошибка сети', true);
+            }
+        }
+
+        function displayStudentInfo(student) {
+            document.getElementById('studentName').textContent = `${student.firstName} ${student.lastName}`;
+            document.getElementById('studentClass').textContent = student.class;
+            document.getElementById('studentBalance').textContent = `${student.balance} баллов`;
+            document.getElementById('studentInfo').style.display = 'block';
+            
+            document.getElementById('studentInfo').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        async function addBalance() {
+            if (!currentStudent) {
+                showMessage('operationMessage', '❌ Сначала найдите ученика', true);
+                return;
+            }
+            
+            const amount = parseInt(document.getElementById('amount').value);
+            if (!amount || amount <= 0) {
+                showMessage('operationMessage', '💰 Введите корректную сумму', true);
+                return;
+            }
+
+            try {
+                showMessage('operationMessage', '⏳ Обработка операции...', false);
+                
+                const response = await fetch(`/api/student/${currentStudent.id}/add`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ amount })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showMessage('operationMessage', `✅ Баланс пополнен на ${amount} баллов`, false);
+                    currentStudent.balance = result.newBalance;
+                    displayStudentInfo(currentStudent);
+                } else {
+                    showMessage('operationMessage', '❌ Ошибка: ' + result.error, true);
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                showMessage('operationMessage', '⚠️ Ошибка сети', true);
+            }
+        }
+
+        async function subtractBalance() {
+            if (!currentStudent) {
+                showMessage('operationMessage', '❌ Сначала найдите ученика', true);
+                return;
+            }
+            
+            const amount = parseInt(document.getElementById('amount').value);
+            if (!amount || amount <= 0) {
+                showMessage('operationMessage', '💰 Введите корректную сумму', true);
+                return;
+            }
+
+            if (amount > currentStudent.balance) {
+                showMessage('operationMessage', '❌ Недостаточно средств на балансе', true);
+                return;
+            }
+
+            try {
+                showMessage('operationMessage', '⏳ Обработка операции...', false);
+                
+                const response = await fetch(`/api/student/${currentStudent.id}/subtract`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ amount })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showMessage('operationMessage', `✅ Списано ${amount} баллов`, false);
+                    currentStudent.balance = result.newBalance;
+                    displayStudentInfo(currentStudent);
+                } else {
+                    showMessage('operationMessage', '❌ Ошибка: ' + result.error, true);
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                showMessage('operationMessage', '⚠️ Ошибка сети', true);
+            }
+        }
+
+        function logout() {
+            currentStudent = null;
+            document.getElementById('password').value = '';
+            document.getElementById('studentInfo').style.display = 'none';
+            document.getElementById('amount').value = '100';
+            document.getElementById('manualQRInput').value = '';
+            showScreen('passwordScreen');
+        }
+
+        // Enter для пароля
+        document.getElementById('password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkPassword();
+            }
+        });
+
+        // Enter для поля QR-кода
+        document.getElementById('manualQRInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                manualQRInputFromField();
+            }
+        });
+
+        // Enter для суммы
+        document.getElementById('amount').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                subtractBalance();
+            }
+        });
+
+        console.log('🚀 SehriyoPay загружен!');
+    </script>
 </body>
 </html>
