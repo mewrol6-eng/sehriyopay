@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const QRCode = require('qrcode');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -12,7 +13,7 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // Инициализация базы данных
-const db = new sqlite3.Database(':memory:'); // Используем память для демо, для продакшена замени на файл
+const db = new sqlite3.Database(':memory:');
 
 // Создание таблиц
 db.serialize(() => {
@@ -36,25 +37,16 @@ db.serialize(() => {
         FOREIGN KEY(student_id) REFERENCES students(id)
     )`);
     
-    db.run(`CREATE TABLE IF NOT EXISTS admins (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        telegram_id INTEGER UNIQUE,
-        username TEXT,
-        is_active BOOLEAN DEFAULT 1
-    )`);
-    
-    // Добавляем тестовых учеников
+    // Добавляем только одного ученика - Саидамира
     db.run(`INSERT OR IGNORE INTO students (first_name, last_name, class, qr_code, balance) VALUES 
-        ('Иван', 'Иванов', '5А', 'TEST123', 500),
-        ('Мария', 'Петрова', '6Б', 'TEST456', 300),
-        ('Алексей', 'Сидоров', '7В', 'TEST789', 750)
+        ('Саидамир', 'Асходжаев', '9Д', '0001', 1000)
     `);
 });
 
-// Пароль продавца (в продакшене храни в .env)
+// Пароль продавца
 const SELLER_PASSWORD = 'school123';
 
-// ==================== ВЕБ-ИНТЕРФЕЙС ENDPOINTS ====================
+// ==================== API ENDPOINTS ====================
 
 // Главная страница
 app.get('/', (req, res) => {
@@ -136,7 +128,7 @@ app.post('/api/student/:id/add', async (req, res) => {
     }
 });
 
-// Списать баллы
+// Списать эльки
 app.post('/api/student/:id/subtract', async (req, res) => {
     try {
         const studentId = req.params.id;
@@ -171,7 +163,7 @@ app.post('/api/student/:id/subtract', async (req, res) => {
                     
                     // Записываем транзакцию
                     db.run(`INSERT INTO transactions (student_id, type, amount, description) VALUES (?, ?, ?, ?)`,
-                        [studentId, 'subtract', amount, 'Списание баллов']);
+                        [studentId, 'subtract', amount, 'Списание эльков']);
                     
                     // Получаем обновленные данные ученика
                     db.get(`SELECT * FROM students WHERE id = ?`, [studentId], (err, updatedStudent) => {
@@ -322,77 +314,58 @@ app.get('/api/transactions', async (req, res) => {
     }
 });
 
-// Получить ученика по ID
-app.get('/api/students/:id', async (req, res) => {
+// Генератор QR-кода
+app.get('/api/qr/:qrCode', async (req, res) => {
     try {
-        const { id } = req.params;
+        const { qrCode } = req.params;
         
-        db.get('SELECT * FROM students WHERE id = ?', [id], (err, student) => {
-            if (err) {
-                console.error('Database error:', err);
-                return res.status(500).json({ error: 'Database error' });
+        // Генерируем QR-код
+        const qrCodeDataURL = await QRCode.toDataURL(qrCode, {
+            width: 300,
+            margin: 2,
+            color: {
+                dark: '#000000',
+                light: '#FFFFFF'
             }
-            
-            if (!student) {
-                return res.status(404).json({ error: 'Student not found' });
-            }
-            
-            res.json(student);
         });
-    } catch (error) {
-        console.error('Server error:', error);
-        res.status(500).json({ error: 'Server error' });
-    }
-});
-
-// Добавить администратора
-app.post('/api/admin/add', async (req, res) => {
-    try {
-        const { telegram_id, username } = req.body;
         
-        db.run(`INSERT OR REPLACE INTO admins (telegram_id, username) VALUES (?, ?)`,
-            [telegram_id, username],
-            function(err) {
-                if (err) {
-                    console.error('Database error:', err);
-                    return res.status(500).json({ error: 'Database error' });
-                }
-                
-                res.json({ success: true, message: 'Admin added successfully' });
-            }
-        );
-    } catch (error) {
-        console.error('Server error:', error);
-        res.status(500).json({ error: 'Server error' });
-    }
-});
-
-// Проверить является ли пользователь админом
-app.get('/api/admin/check/:telegramId', async (req, res) => {
-    try {
-        const { telegramId } = req.params;
-        
-        db.get('SELECT * FROM admins WHERE telegram_id = ? AND is_active = 1', [telegramId], (err, admin) => {
-            if (err) {
-                console.error('Database error:', err);
-                return res.status(500).json({ error: 'Database error' });
-            }
-            
-            res.json({ isAdmin: !!admin });
+        // Отправляем QR-код как base64 изображение
+        res.json({ 
+            success: true, 
+            qrCode: qrCodeDataURL,
+            downloadUrl: `${req.protocol}://${req.get('host')}/api/qr-download/${qrCode}`
         });
+        
     } catch (error) {
-        console.error('Server error:', error);
-        res.status(500).json({ error: 'Server error' });
+        console.error('QR generation error:', error);
+        res.status(500).json({ error: 'QR generation failed' });
     }
 });
 
-// ==================== ЗАПУСК СЕРВЕРА ====================
+// Скачивание QR-кода
+app.get('/api/qr-download/:qrCode', async (req, res) => {
+    try {
+        const { qrCode } = req.params;
+        
+        const qrBuffer = await QRCode.toBuffer(qrCode, {
+            width: 300,
+            margin: 2,
+            color: {
+                dark: '#000000',
+                light: '#FFFFFF'
+            }
+        });
+        
+        res.setHeader('Content-Type', 'image/png');
+        res.setHeader('Content-Disposition', `attachment; filename="qr-${qrCode}.png"`);
+        res.send(qrBuffer);
+        
+    } catch (error) {
+        console.error('QR download error:', error);
+        res.status(500).json({ error: 'QR download failed' });
+    }
+});
 
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📱 Endpoints available:`);
-    console.log(`   📍 Web interface: http://localhost:${PORT}`);
-    console.log(`   🔗 API: http://localhost:${PORT}/api/`);
-    console.log(`   👥 Students: http://localhost:${PORT}/api/students`);
-    console.log(`   📊 Stats: http://localhost:${PORT}/api/stats`);
 });
