@@ -125,14 +125,6 @@
             background: #d97706;
         }
         
-        .btn-secondary {
-            background: #6b7280;
-        }
-        
-        .btn-secondary:hover {
-            background: #4b5563;
-        }
-        
         #camera-container {
             width: 100%;
             margin: 20px 0;
@@ -244,11 +236,6 @@
             margin-top: 20px;
         }
         
-        .logout-btn {
-            margin-top: 20px;
-            background: #6b7280;
-        }
-        
         .status-message {
             padding: 10px;
             border-radius: 5px;
@@ -274,11 +261,6 @@
             margin: 20px 0;
         }
         
-        .qr-input-section p {
-            margin-bottom: 20px;
-            color: #6b7280;
-        }
-        
         .camera-controls {
             display: flex;
             gap: 10px;
@@ -298,16 +280,6 @@
             display: none;
         }
         
-        .flash {
-            animation: flash 0.3s;
-        }
-        
-        @keyframes flash {
-            0% { opacity: 0; }
-            50% { opacity: 1; }
-            100% { opacity: 0; }
-        }
-        
         .flash-overlay {
             position: fixed;
             top: 0;
@@ -318,6 +290,13 @@
             z-index: 9999;
             pointer-events: none;
             display: none;
+        }
+        
+        .auto-camera-notice {
+            text-align: center;
+            color: #6b7280;
+            font-size: 14px;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -345,26 +324,24 @@
             
             <div id="camera-container">
                 <div class="camera-permission" id="cameraPermission">
-                    <h3>📸 Доступ к камере</h3>
-                    <p>Нажмите кнопку ниже чтобы включить камеру для сканирования QR-кодов</p>
-                    <button class="btn btn-success" onclick="startCamera()">
-                        🎥 Включить камеру
-                    </button>
+                    <h3>📸 Камера готова к работе</h3>
+                    <p>Камера автоматически включится после входа в систему</p>
                 </div>
                 <video id="camera-video" autoplay playsinline></video>
                 <canvas id="canvas"></canvas>
             </div>
             
             <div class="camera-controls">
-                <button class="btn btn-warning" id="stopCameraBtn" onclick="stopCamera()" style="display: none;">
-                    ⏹️ Остановить камеру
-                </button>
-                <button class="btn btn-info" id="flashBtn" onclick="triggerFlash()" style="display: none;">
+                <button class="btn btn-info" id="flashBtn" onclick="triggerFlash()">
                     ⚡ Вспышка
                 </button>
                 <button class="btn btn-success" onclick="manualQRInputFromField()">
                     🔍 Найти по коду
                 </button>
+            </div>
+            
+            <div class="auto-camera-notice">
+                📹 Камера работает автоматически
             </div>
             
             <div class="qr-input-section">
@@ -400,8 +377,6 @@
                 
                 <div class="status-message" id="operationMessage"></div>
             </div>
-            
-            <button class="btn btn-secondary logout-btn" onclick="logout()">🚪 Выйти из системы</button>
         </div>
     </div>
 
@@ -410,6 +385,7 @@
         let currentStudent = null;
         let stream = null;
         let animationFrame = null;
+        let isProcessing = false;
         const SELLER_PASSWORD = 'school123';
 
         function showMessage(elementId, message, isError = false) {
@@ -435,6 +411,10 @@
                 showMessage('passwordMessage', '✅ Успешный вход!', false);
                 setTimeout(() => {
                     showScreen('scannerScreen');
+                    // Автоматически запускаем камеру после входа
+                    setTimeout(() => {
+                        startCamera();
+                    }, 500);
                 }, 1000);
             } else {
                 showMessage('passwordMessage', '❌ Неверный пароль! Попробуйте снова.', true);
@@ -451,8 +431,6 @@
         // Запуск камеры
         async function startCamera() {
             try {
-                showMessage('operationMessage', '🔄 Запрашиваю доступ к камере...', false);
-                
                 // Останавливаем предыдущую камеру если есть
                 if (stream) {
                     stopCamera();
@@ -474,11 +452,7 @@
                 
                 // Скрываем сообщение о разрешении
                 document.getElementById('cameraPermission').style.display = 'none';
-                document.getElementById('stopCameraBtn').style.display = 'block';
-                document.getElementById('flashBtn').style.display = 'block';
                 document.getElementById('camera-container').classList.add('camera-active');
-                
-                showMessage('operationMessage', '✅ Камера активна! Наведите на QR-код', false);
                 
                 // Запускаем распознавание QR-кодов
                 startQRScanning();
@@ -510,7 +484,7 @@
             const context = canvas.getContext('2d');
             
             function scanQR() {
-                if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                if (video.readyState === video.HAVE_ENOUGH_DATA && !isProcessing) {
                     canvas.width = video.videoWidth;
                     canvas.height = video.videoHeight;
                     
@@ -525,9 +499,9 @@
                     
                     if (code) {
                         console.log('✅ Найден QR-код:', code.data);
+                        isProcessing = true;
                         triggerFlash();
                         onQRCodeDetected(code.data);
-                        return;
                     }
                 }
                 
@@ -561,17 +535,21 @@
                     currentStudent = student;
                     displayStudentInfo(student);
                     showMessage('operationMessage', '✅ Ученик найден!', false);
-                    stopCamera();
                 } else {
                     showMessage('operationMessage', '❌ Ученик не найден', true);
                 }
             } catch (error) {
                 console.error('Ошибка:', error);
                 showMessage('operationMessage', '⚠️ Ошибка при обработке QR-кода', true);
+            } finally {
+                // Разрешаем обработку следующего QR-кода через 2 секунды
+                setTimeout(() => {
+                    isProcessing = false;
+                }, 2000);
             }
         }
 
-        // Остановка камеры
+        // Остановка камеры (теперь не используется, но оставим на всякий случай)
         function stopCamera() {
             if (animationFrame) {
                 cancelAnimationFrame(animationFrame);
@@ -582,17 +560,6 @@
                 stream.getTracks().forEach(track => track.stop());
                 stream = null;
             }
-            
-            // Скрываем видео
-            const video = document.getElementById('camera-video');
-            video.style.display = 'none';
-            video.srcObject = null;
-            
-            // Показываем сообщение о разрешении
-            document.getElementById('cameraPermission').style.display = 'block';
-            document.getElementById('stopCameraBtn').style.display = 'none';
-            document.getElementById('flashBtn').style.display = 'none';
-            document.getElementById('camera-container').classList.remove('camera-active');
         }
 
         function manualQRInputFromField() {
@@ -712,16 +679,6 @@
                 console.error('Ошибка:', error);
                 showMessage('operationMessage', '⚠️ Ошибка сети', true);
             }
-        }
-
-        function logout() {
-            stopCamera();
-            currentStudent = null;
-            document.getElementById('password').value = '';
-            document.getElementById('studentInfo').style.display = 'none';
-            document.getElementById('amount').value = '100';
-            document.getElementById('manualQRInput').value = '';
-            showScreen('passwordScreen');
         }
 
         // Enter для пароля
