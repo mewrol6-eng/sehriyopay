@@ -35,11 +35,25 @@
             color: white;
             padding: 25px;
             text-align: center;
+            position: relative;
         }
         
         .header h1 {
             font-size: 28px;
             margin-bottom: 5px;
+        }
+        
+        .admin-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
         }
         
         .screen {
@@ -63,7 +77,7 @@
             font-size: 16px;
         }
         
-        .input-group input {
+        .input-group input, .input-group select {
             width: 100%;
             padding: 15px;
             border: 2px solid #e5e7eb;
@@ -72,7 +86,7 @@
             transition: all 0.3s;
         }
         
-        .input-group input:focus {
+        .input-group input:focus, .input-group select:focus {
             outline: none;
             border-color: #4f46e5;
             box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
@@ -123,6 +137,14 @@
         
         .btn-warning:hover {
             background: #d97706;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
         }
         
         .btn-active {
@@ -324,12 +346,75 @@
             font-size: 14px;
             margin-top: 5px;
         }
+        
+        .admin-panel {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .admin-panel h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #374151;
+        }
+        
+        .student-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 15px 0;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        
+        .student-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .student-item:last-child {
+            border-bottom: none;
+        }
+        
+        .student-details {
+            flex: 1;
+        }
+        
+        .student-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .small-btn {
+            padding: 5px 10px;
+            font-size: 12px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .back-btn {
+            background: #6b7280;
+            color: white;
+            margin-bottom: 15px;
+        }
+        
+        .back-btn:hover {
+            background: #4b5563;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>Sehriyo pay</h1>
+            <button class="admin-btn" onclick="showScreen('adminScreen')">⚙️ Админ</button>
         </div>
         
         <!-- Экран ввода пароля -->
@@ -373,7 +458,7 @@
             
             <div class="qr-input-section">
                 <div class="input-group">
-                    <input type="text" id="manualQRInput" placeholder="Введите QR-код вручную (например: 0001)" style="text-align: center;">
+                    <input type="text" id="manualQRInput" placeholder="Введите ID ученика вручную" style="text-align: center;">
                 </div>
             </div>
             
@@ -405,18 +490,76 @@
                 <div class="status-message" id="operationMessage"></div>
             </div>
         </div>
+        
+        <!-- Админ панель -->
+        <div class="screen" id="adminScreen">
+            <button class="btn back-btn" onclick="showScreen('scannerScreen')">← Назад</button>
+            <h3 style="text-align: center; margin-bottom: 20px; color: #374151;">⚙️ Панель администратора</h3>
+            
+            <div class="admin-panel">
+                <h4>👥 Управление учениками</h4>
+                
+                <div class="input-group">
+                    <label for="newStudentName">Имя и фамилия:</label>
+                    <input type="text" id="newStudentName" placeholder="Иван Иванов">
+                </div>
+                
+                <div class="input-group">
+                    <label for="newStudentClass">Класс:</label>
+                    <input type="text" id="newStudentClass" placeholder="10-А">
+                </div>
+                
+                <div class="input-group">
+                    <label for="newStudentId">ID ученика (для QR):</label>
+                    <input type="text" id="newStudentId" placeholder="0001">
+                </div>
+                
+                <button class="btn btn-success" onclick="addNewStudent()">➕ Добавить ученика</button>
+                
+                <div class="student-list" id="studentsList">
+                    <!-- Список учеников будет здесь -->
+                </div>
+                
+                <button class="btn btn-secondary" onclick="exportData()">💾 Экспорт данных</button>
+                <button class="btn btn-warning" onclick="importData()">📁 Импорт данных</button>
+                <input type="file" id="importFile" style="display: none;" accept=".json">
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
     <script>
+        // Конфигурация
+        const SELLER_PASSWORD = 'school123';
+        const ADMIN_PASSWORD = 'admin123';
+        
+        // Данные приложения
+        let students = JSON.parse(localStorage.getItem('sehriyoStudents')) || {};
         let currentStudent = null;
         let stream = null;
         let animationFrame = null;
         let isProcessing = false;
         let isFlashOn = false;
         let videoTrack = null;
-        const SELLER_PASSWORD = 'school123';
 
+        // Инициализация демо данных если пусто
+        function initializeDemoData() {
+            if (Object.keys(students).length === 0) {
+                students = {
+                    '0001': { id: '0001', firstName: 'Алишер', lastName: 'Умаров', class: '10-A', balance: 500 },
+                    '0002': { id: '0002', firstName: 'Мария', lastName: 'Иванова', class: '9-B', balance: 300 },
+                    '0003': { id: '0003', firstName: 'Дмитрий', lastName: 'Петров', class: '11-C', balance: 700 }
+                };
+                saveStudents();
+            }
+        }
+
+        // Сохранение данных
+        function saveStudents() {
+            localStorage.setItem('sehriyoStudents', JSON.stringify(students));
+        }
+
+        // Показать сообщение
         function showMessage(elementId, message, isError = false) {
             const element = document.getElementById(elementId);
             element.textContent = message;
@@ -428,6 +571,7 @@
             }, 3000);
         }
 
+        // Проверка пароля
         function checkPassword() {
             const password = document.getElementById('password').value;
             
@@ -436,11 +580,11 @@
                 return;
             }
             
-            if (password === SELLER_PASSWORD) {
+            if (password === SELLER_PASSWORD || password === ADMIN_PASSWORD) {
                 showMessage('passwordMessage', '✅ Успешный вход!', false);
+                initializeDemoData();
                 setTimeout(() => {
                     showScreen('scannerScreen');
-                    // Автоматически запускаем камеру после входа
                     setTimeout(() => {
                         startCamera();
                     }, 500);
@@ -450,24 +594,27 @@
             }
         }
 
+        // Переключение экранов
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.classList.remove('active');
             });
             document.getElementById(screenId).classList.add('active');
+            
+            if (screenId === 'adminScreen') {
+                renderStudentsList();
+            }
         }
 
         // Запуск камеры
         async function startCamera() {
             try {
-                // Останавливаем предыдущую камеру если есть
                 if (stream) {
                     stopCamera();
                     isFlashOn = false;
                     updateFlashButton();
                 }
                 
-                // Запрашиваем доступ к камере
                 stream = await navigator.mediaDevices.getUserMedia({ 
                     video: { 
                         facingMode: "environment",
@@ -477,18 +624,13 @@
                     } 
                 });
                 
-                // Сохраняем видеотрек для управления фонариком
                 videoTrack = stream.getVideoTracks()[0];
                 
-                // Показываем видео
                 const video = document.getElementById('camera-video');
                 video.srcObject = stream;
                 video.style.display = 'block';
                 
-                // Скрываем сообщение о разрешении
                 document.getElementById('cameraPermission').style.display = 'none';
-                
-                // Запускаем распознавание QR-кодов
                 startQRScanning();
                 
             } catch (error) {
@@ -511,7 +653,7 @@
             }
         }
 
-        // Включение/выключение фонарика
+        // Управление фонариком
         async function toggleFlash() {
             if (!videoTrack) {
                 showMessage('operationMessage', '❌ Камера не доступна', true);
@@ -521,13 +663,11 @@
             try {
                 const capabilities = videoTrack.getCapabilities();
                 
-                // Проверяем поддерживает ли камера фонарик
                 if (!capabilities.torch) {
                     showMessage('operationMessage', '❌ Фонарик не поддерживается на этом устройстве', true);
                     return;
                 }
 
-                // Переключаем фонарик
                 await videoTrack.applyConstraints({
                     advanced: [{ torch: !isFlashOn }]
                 });
@@ -559,7 +699,7 @@
             }
         }
 
-        // Распознавание QR-кодов
+        // Сканирование QR-кодов
         function startQRScanning() {
             const video = document.getElementById('camera-video');
             const canvas = document.getElementById('canvas');
@@ -567,17 +707,11 @@
             
             function scanQR() {
                 if (video.readyState === video.HAVE_ENOUGH_DATA && !isProcessing) {
-                    // Устанавливаем размер canvas под квадратную камеру
                     canvas.width = video.videoWidth;
                     canvas.height = video.videoHeight;
                     
-                    // Рисуем текущий кадр видео на canvas
                     context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    
-                    // Получаем данные изображения
                     const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                    
-                    // Распознаем QR-код
                     const code = jsQR(imageData.data, imageData.width, imageData.height);
                     
                     if (code) {
@@ -587,39 +721,27 @@
                     }
                 }
                 
-                // Продолжаем сканирование
                 animationFrame = requestAnimationFrame(scanQR);
             }
             
-            // Запускаем сканирование
             video.addEventListener('loadeddata', scanQR);
         }
 
-        // Обработка найденного QR-кода
-        async function onQRCodeDetected(qrCode) {
-            try {
-                // Убираем сообщение об обработке, чтобы не мешало
-                // showMessage('operationMessage', '📱 Обрабатываю QR-код...', false);
-                
-                const response = await fetch(`/api/student/${qrCode}`);
-                const student = await response.json();
-                
-                if (student && !student.error) {
-                    currentStudent = student;
-                    displayStudentInfo(student);
-                    showMessage('operationMessage', '✅ Ученик найден!', false);
-                } else {
-                    showMessage('operationMessage', '❌ Ученик не найден', true);
-                }
-            } catch (error) {
-                console.error('Ошибка:', error);
-                showMessage('operationMessage', '⚠️ Ошибка при обработке QR-кода', true);
-            } finally {
-                // Разрешаем обработку следующего QR-кода через 2 секунды
-                setTimeout(() => {
-                    isProcessing = false;
-                }, 2000);
+        // Обработка QR-кода
+        function onQRCodeDetected(qrCode) {
+            const student = students[qrCode];
+            
+            if (student) {
+                currentStudent = student;
+                displayStudentInfo(student);
+                showMessage('operationMessage', '✅ Ученик найден!', false);
+            } else {
+                showMessage('operationMessage', '❌ Ученик не найден', true);
             }
+            
+            setTimeout(() => {
+                isProcessing = false;
+            }, 2000);
         }
 
         // Остановка камеры
@@ -630,7 +752,6 @@
             }
             
             if (stream) {
-                // Выключаем фонарик перед остановкой камеры
                 if (videoTrack && isFlashOn) {
                     videoTrack.applyConstraints({ advanced: [{ torch: false }] }).catch(() => {});
                 }
@@ -641,35 +762,25 @@
             }
         }
 
+        // Ручной ввод QR
         function manualQRInputFromField() {
             const qrCode = document.getElementById('manualQRInput').value.trim();
             if (qrCode) {
-                fetchStudentInfo(qrCode);
-            } else {
-                showMessage('operationMessage', '❌ Введите QR-код', true);
-            }
-        }
-
-        async function fetchStudentInfo(qrCode) {
-            try {
-                showMessage('operationMessage', '🔄 Поиск ученика...', false);
+                const student = students[qrCode];
                 
-                const response = await fetch(`/api/student/${qrCode}`);
-                const student = await response.json();
-                
-                if (student && !student.error) {
+                if (student) {
                     currentStudent = student;
                     displayStudentInfo(student);
                     showMessage('operationMessage', '✅ Ученик найден!', false);
                 } else {
                     showMessage('operationMessage', '❌ Ученик не найден', true);
                 }
-            } catch (error) {
-                console.error('Ошибка:', error);
-                showMessage('operationMessage', '⚠️ Ошибка сети', true);
+            } else {
+                showMessage('operationMessage', '❌ Введите ID ученика', true);
             }
         }
 
+        // Отображение информации об ученике
         function displayStudentInfo(student) {
             document.getElementById('studentName').textContent = `${student.firstName} ${student.lastName}`;
             document.getElementById('studentClass').textContent = student.class;
@@ -679,7 +790,8 @@
             document.getElementById('studentInfo').scrollIntoView({ behavior: 'smooth' });
         }
 
-        async function addBalance() {
+        // Пополнение баланса
+        function addBalance() {
             if (!currentStudent) {
                 showMessage('operationMessage', '❌ Сначала найдите ученика', true);
                 return;
@@ -691,33 +803,14 @@
                 return;
             }
 
-            try {
-                showMessage('operationMessage', '⏳ Обработка операции...', false);
-                
-                const response = await fetch(`/api/student/${currentStudent.id}/add`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ amount })
-                });
-                
-                const result = await response.json();
-                
-                if (response.ok) {
-                    showMessage('operationMessage', `✅ Баланс пополнен на ${amount} элек`, false);
-                    currentStudent.balance = result.newBalance;
-                    displayStudentInfo(currentStudent);
-                } else {
-                    showMessage('operationMessage', '❌ Ошибка: ' + result.error, true);
-                }
-            } catch (error) {
-                console.error('Ошибка:', error);
-                showMessage('operationMessage', '⚠️ Ошибка сети', true);
-            }
+            currentStudent.balance += amount;
+            saveStudents();
+            displayStudentInfo(currentStudent);
+            showMessage('operationMessage', `✅ Баланс пополнен на ${amount} элек`, false);
         }
 
-        async function subtractBalance() {
+        // Списание баланса
+        function subtractBalance() {
             if (!currentStudent) {
                 showMessage('operationMessage', '❌ Сначала найдите ученика', true);
                 return;
@@ -734,58 +827,156 @@
                 return;
             }
 
-            try {
-                showMessage('operationMessage', '⏳ Обработка операции...', false);
-                
-                const response = await fetch(`/api/student/${currentStudent.id}/subtract`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ amount })
-                });
-                
-                const result = await response.json();
-                
-                if (response.ok) {
-                    showMessage('operationMessage', `✅ Списано ${amount} элек`, false);
-                    currentStudent.balance = result.newBalance;
-                    displayStudentInfo(currentStudent);
-                } else {
-                    showMessage('operationMessage', '❌ Ошибка: ' + result.error, true);
-                }
-            } catch (error) {
-                console.error('Ошибка:', error);
-                showMessage('operationMessage', '⚠️ Ошибка сети', true);
+            currentStudent.balance -= amount;
+            saveStudents();
+            displayStudentInfo(currentStudent);
+            showMessage('operationMessage', `✅ Списано ${amount} элек`, false);
+        }
+
+        // Админ: добавление ученика
+        function addNewStudent() {
+            const name = document.getElementById('newStudentName').value.trim();
+            const studentClass = document.getElementById('newStudentClass').value.trim();
+            const id = document.getElementById('newStudentId').value.trim();
+            
+            if (!name || !studentClass || !id) {
+                alert('Заполните все поля!');
+                return;
+            }
+            
+            if (students[id]) {
+                alert('Ученик с таким ID уже существует!');
+                return;
+            }
+            
+            const nameParts = name.split(' ');
+            const firstName = nameParts[0] || '';
+            const lastName = nameParts.slice(1).join(' ') || '';
+            
+            students[id] = {
+                id: id,
+                firstName: firstName,
+                lastName: lastName,
+                class: studentClass,
+                balance: 0
+            };
+            
+            saveStudents();
+            renderStudentsList();
+            
+            // Очищаем поля
+            document.getElementById('newStudentName').value = '';
+            document.getElementById('newStudentClass').value = '';
+            document.getElementById('newStudentId').value = '';
+            
+            alert('✅ Ученик добавлен!');
+        }
+
+        // Админ: отображение списка учеников
+        function renderStudentsList() {
+            const list = document.getElementById('studentsList');
+            list.innerHTML = '';
+            
+            Object.values(students).forEach(student => {
+                const item = document.createElement('div');
+                item.className = 'student-item';
+                item.innerHTML = `
+                    <div class="student-details">
+                        <strong>${student.firstName} ${student.lastName}</strong>
+                        <div>Класс: ${student.class} | ID: ${student.id}</div>
+                        <div>Баланс: ${student.balance} элек</div>
+                    </div>
+                    <div class="student-actions">
+                        <button class="small-btn btn-success" onclick="editStudent('${student.id}')">✏️</button>
+                        <button class="small-btn btn-danger" onclick="deleteStudent('${student.id}')">🗑️</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        // Админ: редактирование ученика
+        function editStudent(id) {
+            const student = students[id];
+            const newName = prompt('Введите новое имя и фамилию:', `${student.firstName} ${student.lastName}`);
+            const newClass = prompt('Введите новый класс:', student.class);
+            
+            if (newName && newClass) {
+                const nameParts = newName.split(' ');
+                student.firstName = nameParts[0] || '';
+                student.lastName = nameParts.slice(1).join(' ') || '';
+                student.class = newClass;
+                saveStudents();
+                renderStudentsList();
             }
         }
 
-        // Enter для пароля
+        // Админ: удаление ученика
+        function deleteStudent(id) {
+            if (confirm(`Удалить ученика ${students[id].firstName} ${students[id].lastName}?`)) {
+                delete students[id];
+                saveStudents();
+                renderStudentsList();
+            }
+        }
+
+        // Экспорт данных
+        function exportData() {
+            const dataStr = JSON.stringify(students, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = 'sehriyo_students_backup.json';
+            link.click();
+        }
+
+        // Импорт данных
+        function importData() {
+            document.getElementById('importFile').click();
+        }
+
+        // Обработка импорта файла
+        document.getElementById('importFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    students = importedData;
+                    saveStudents();
+                    renderStudentsList();
+                    alert('✅ Данные успешно импортированы!');
+                } catch (error) {
+                    alert('❌ Ошибка при импорте данных!');
+                }
+            };
+            reader.readAsText(file);
+            
+            // Сбрасываем значение input
+            e.target.value = '';
+        });
+
+        // Обработчики клавиш
         document.getElementById('password').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                checkPassword();
-            }
+            if (e.key === 'Enter') checkPassword();
         });
 
-        // Enter для поля QR-кода
         document.getElementById('manualQRInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                manualQRInputFromField();
-            }
+            if (e.key === 'Enter') manualQRInputFromField();
         });
 
-        // Enter для суммы
         document.getElementById('amount').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                subtractBalance();
-            }
+            if (e.key === 'Enter') subtractBalance();
         });
 
-        // Автоматически останавливаем камеру при закрытии страницы
-        window.addEventListener('beforeunload', function() {
-            stopCamera();
-        });
+        // Очистка при закрытии
+        window.addEventListener('beforeunload', stopCamera);
 
+        // Инициализация
+        initializeDemoData();
         console.log('🚀 Sehriyo pay загружен!');
     </script>
 </body>
