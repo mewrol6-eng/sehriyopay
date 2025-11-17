@@ -125,6 +125,14 @@
             background: #d97706;
         }
         
+        .btn-active {
+            background: #dc2626;
+        }
+        
+        .btn-active:hover {
+            background: #b91c1c;
+        }
+        
         #camera-container {
             width: 100%;
             margin: 20px 0;
@@ -280,29 +288,22 @@
             display: none;
         }
         
-        .flash-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: white;
-            z-index: 9999;
-            pointer-events: none;
-            display: none;
-        }
-        
         .auto-camera-notice {
             text-align: center;
             color: #6b7280;
             font-size: 14px;
             margin-top: 10px;
         }
+        
+        .flash-status {
+            text-align: center;
+            color: #6b7280;
+            font-size: 14px;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
-    <div class="flash-overlay" id="flashOverlay"></div>
-    
     <div class="container">
         <div class="header">
             <h1>Sehriyo pay</h1>
@@ -332,12 +333,16 @@
             </div>
             
             <div class="camera-controls">
-                <button class="btn btn-info" id="flashBtn" onclick="triggerFlash()">
-                    ⚡ Вспышка
+                <button class="btn btn-warning" id="flashBtn" onclick="toggleFlash()">
+                    ⚡ Включить фонарик
                 </button>
                 <button class="btn btn-success" onclick="manualQRInputFromField()">
                     🔍 Найти по коду
                 </button>
+            </div>
+            
+            <div class="flash-status" id="flashStatus">
+                Фонарик: выключен
             </div>
             
             <div class="auto-camera-notice">
@@ -386,6 +391,8 @@
         let stream = null;
         let animationFrame = null;
         let isProcessing = false;
+        let isFlashOn = false;
+        let videoTrack = null;
         const SELLER_PASSWORD = 'school123';
 
         function showMessage(elementId, message, isError = false) {
@@ -434,6 +441,8 @@
                 // Останавливаем предыдущую камеру если есть
                 if (stream) {
                     stopCamera();
+                isFlashOn = false;
+                    updateFlashButton();
                 }
                 
                 // Запрашиваем доступ к камере
@@ -444,6 +453,9 @@
                         height: { ideal: 720 }
                     } 
                 });
+                
+                // Сохраняем видеотрек для управления фонариком
+                videoTrack = stream.getVideoTracks()[0];
                 
                 // Показываем видео
                 const video = document.getElementById('camera-video');
@@ -477,6 +489,54 @@
             }
         }
 
+        // Включение/выключение фонарика
+        async function toggleFlash() {
+            if (!videoTrack) {
+                showMessage('operationMessage', '❌ Камера не доступна', true);
+                return;
+            }
+
+            try {
+                const capabilities = videoTrack.getCapabilities();
+                
+                // Проверяем поддерживает ли камера фонарик
+                if (!capabilities.torch) {
+                    showMessage('operationMessage', '❌ Фонарик не поддерживается на этом устройстве', true);
+                    return;
+                }
+
+                // Переключаем фонарик
+                await videoTrack.applyConstraints({
+                    advanced: [{ torch: !isFlashOn }]
+                });
+
+                isFlashOn = !isFlashOn;
+                updateFlashButton();
+                
+            } catch (error) {
+                console.error('Ошибка фонарика:', error);
+                showMessage('operationMessage', '❌ Ошибка при переключении фонарика', true);
+            }
+        }
+
+        // Обновление кнопки фонарика
+        function updateFlashButton() {
+            const flashBtn = document.getElementById('flashBtn');
+            const flashStatus = document.getElementById('flashStatus');
+            
+            if (isFlashOn) {
+                flashBtn.innerHTML = '🔦 Выключить фонарик';
+                flashBtn.className = 'btn btn-active';
+                flashStatus.textContent = 'Фонарик: включен';
+                flashStatus.style.color = '#059669';
+            } else {
+                flashBtn.innerHTML = '⚡ Включить фонарик';
+                flashBtn.className = 'btn btn-warning';
+                flashStatus.textContent = 'Фонарик: выключен';
+                flashStatus.style.color = '#6b7280';
+            }
+        }
+
         // Распознавание QR-кодов
         function startQRScanning() {
             const video = document.getElementById('camera-video');
@@ -500,7 +560,6 @@
                     if (code) {
                         console.log('✅ Найден QR-код:', code.data);
                         isProcessing = true;
-                        triggerFlash();
                         onQRCodeDetected(code.data);
                     }
                 }
@@ -511,16 +570,6 @@
             
             // Запускаем сканирование
             video.addEventListener('loadeddata', scanQR);
-        }
-
-        // Вспышка
-        function triggerFlash() {
-            const flashOverlay = document.getElementById('flashOverlay');
-            flashOverlay.style.display = 'block';
-            
-            setTimeout(() => {
-                flashOverlay.style.display = 'none';
-            }, 300);
         }
 
         // Обработка найденного QR-кода
@@ -549,7 +598,7 @@
             }
         }
 
-        // Остановка камеры (теперь не используется, но оставим на всякий случай)
+        // Остановка камеры
         function stopCamera() {
             if (animationFrame) {
                 cancelAnimationFrame(animationFrame);
@@ -557,8 +606,14 @@
             }
             
             if (stream) {
+                // Выключаем фонарик перед остановкой камеры
+                if (videoTrack && isFlashOn) {
+                    videoTrack.applyConstraints({ advanced: [{ torch: false }] }).catch(() => {});
+                }
+                
                 stream.getTracks().forEach(track => track.stop());
                 stream = null;
+                videoTrack = null;
             }
         }
 
