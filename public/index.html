@@ -255,13 +255,18 @@
             border-radius: 10px;
             margin: 20px 0;
         }
+        
+        .elk-text {
+            color: #dc2626;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>🏫 SehriyoPay</h1>
-            <p>Школьная система безналичной оплаты</p>
+            <p>Система оплаты <span class="elk-text">эльками</span></p>
         </div>
         
         <!-- Экран ввода пароля -->
@@ -282,19 +287,15 @@
                 <h4 style="margin-bottom: 15px; color: #4f46e5;">🔍 Поиск ученика по QR-коду</h4>
                 
                 <div class="input-group">
-                    <input type="text" id="manualQRInput" placeholder="Введите QR-код (например: TEST123)" style="text-align: center;">
+                    <input type="text" id="manualQRInput" placeholder="Введите QR-код (например: 0001)" style="text-align: center;">
                 </div>
                 
                 <button class="btn btn-success" onclick="manualQRInputFromField()">
                     🔍 Найти ученика
                 </button>
                 
-                <button class="btn btn-warning" onclick="manualQRInput('TEST123')">
-                    📝 Тест: Иван Иванов
-                </button>
-                
-                <button class="btn btn-warning" onclick="manualQRInput('TEST456')">
-                    📝 Тест: Мария Петрова
+                <button class="btn btn-warning" onclick="manualQRInput('0001')">
+                    📝 Саидамир Асходжаев
                 </button>
             </div>
             
@@ -312,7 +313,7 @@
                     </div>
                 </div>
                 
-                <div class="balance" id="studentBalance">0 баллов</div>
+                <div class="balance" id="studentBalance">0 <span class="elk-text">эльков</span></div>
                 
                 <div class="amount-input">
                     <input type="number" id="amount" placeholder="0" min="1" value="100">
@@ -407,7 +408,7 @@
         function displayStudentInfo(student) {
             document.getElementById('studentName').textContent = `${student.firstName} ${student.lastName}`;
             document.getElementById('studentClass').textContent = student.class;
-            document.getElementById('studentBalance').textContent = `${student.balance} баллов`;
+            document.getElementById('studentBalance').innerHTML = `${student.balance} <span class="elk-text">эльков</span>`;
             document.getElementById('studentInfo').style.display = 'block';
             
             document.getElementById('studentInfo').scrollIntoView({ behavior: 'smooth' });
@@ -439,7 +440,7 @@
                 const result = await response.json();
                 
                 if (response.ok) {
-                    showMessage('operationMessage', `✅ Баланс пополнен на ${amount} баллов`, false);
+                    showMessage('operationMessage', `✅ Баланс пополнен на ${amount} эльков`, false);
                     currentStudent.balance = result.newBalance;
                     displayStudentInfo(currentStudent);
                 } else {
@@ -464,7 +465,7 @@
             }
 
             if (amount > currentStudent.balance) {
-                showMessage('operationMessage', '❌ Недостаточно средств на балансе', true);
+                showMessage('operationMessage', '❌ Недостаточно эльков на балансе', true);
                 return;
             }
 
@@ -482,7 +483,7 @@
                 const result = await response.json();
                 
                 if (response.ok) {
-                    showMessage('operationMessage', `✅ Списано ${amount} баллов`, false);
+                    showMessage('operationMessage', `✅ Списано ${amount} эльков`, false);
                     currentStudent.balance = result.newBalance;
                     displayStudentInfo(currentStudent);
                 } else {
