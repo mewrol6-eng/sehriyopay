@@ -3,13 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sehriyo pay</title>
+    <title>Sehriyo Pay | Школьная платежная система</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #10b981;
+            --success-dark: #059669;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
         
         body {
@@ -19,117 +36,297 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
+            color: var(--text-primary);
         }
         
         .container {
-            background: white;
+            background: var(--surface);
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             height: 100vh;
-            max-height: 800px;
+            max-height: 900px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 0 20px rgba(0,0,0,0.3);
-            border-radius: 15px;
+            box-shadow: var(--shadow-lg);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
         }
         
+        /* Header */
         .header {
-            background: #4f46e5;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: white;
-            padding: 15px 20px;
+            padding: 20px;
             text-align: center;
             position: relative;
+            box-shadow: var(--shadow);
         }
         
         .header h1 {
-            font-size: 20px;
+            font-size: 24px;
+            font-weight: 700;
             margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
         
         .nav-buttons {
-            position: absolute;
-            top: 15px;
-            left: 0;
-            right: 0;
             display: flex;
-            justify-content: space-between;
-            padding: 0 20px;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
         }
         
         .nav-btn {
             background: rgba(255,255,255,0.2);
             border: none;
             color: white;
-            padding: 8px 15px;
-            border-radius: 15px;
+            padding: 10px 20px;
+            border-radius: 12px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(10px);
         }
         
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        
+        /* Screens */
         .screen {
             display: none;
-            height: calc(100vh - 70px);
-            padding: 20px;
+            flex: 1;
+            padding: 25px;
             overflow-y: auto;
+            background: var(--background);
         }
         
         .active {
-            display: block;
+            display: flex;
+            flex-direction: column;
         }
         
-        .input-group {
+        .screen-header {
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        
+        .screen-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        
+        .screen-header p {
+            color: var(--text-secondary);
+            font-size: 15px;
+        }
+        
+        /* Cards */
+        .card {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
             margin-bottom: 15px;
+        }
+        
+        .card-header i {
+            font-size: 20px;
+            color: var(--primary);
+            background: rgba(37, 99, 235, 0.1);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+        
+        .card-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        /* Forms */
+        .input-group {
+            margin-bottom: 20px;
         }
         
         .input-group label {
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: #374151;
+            color: var(--text-primary);
+            font-size: 14px;
         }
         
         .input-group input {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
+            padding: 14px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
             font-size: 16px;
+            transition: all 0.3s ease;
+            background: var(--surface);
         }
         
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        /* Buttons */
         .btn {
             width: 100%;
-            padding: 15px;
-            background: #4f46e5;
+            padding: 16px;
+            background: var(--primary);
             color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
         }
         
         .btn-success {
-            background: #10b981;
+            background: var(--success);
+        }
+        
+        .btn-success:hover {
+            background: var(--success-dark);
         }
         
         .btn-danger {
-            background: #ef4444;
+            background: var(--danger);
         }
         
         .btn-secondary {
-            background: #6b7280;
+            background: var(--text-secondary);
         }
         
         .btn-warning {
-            background: #f59e0b;
+            background: var(--warning);
         }
         
+        .btn-sm {
+            padding: 10px 16px;
+            font-size: 14px;
+            width: auto;
+        }
+        
+        /* Scanner */
+        .scanner-container {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        
+        .scanner-frame {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            border: 2px solid var(--success);
+            border-radius: 12px;
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        .scanner-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--success);
+            animation: scan 2s infinite linear;
+            box-shadow: 0 0 10px var(--success);
+        }
+        
+        .barcode-scanner-frame {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 250px;
+            height: 80px;
+            border: 2px solid var(--success);
+            border-radius: 8px;
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        .barcode-scanner-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--success);
+            animation: scan 1.5s infinite linear;
+            box-shadow: 0 0 8px var(--success);
+        }
+        
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+        
+        .scanner-permission {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            text-align: center;
+            width: 100%;
+        }
+        
+        /* Lists */
         .list {
             max-height: 300px;
             overflow-y: auto;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
             padding: 10px;
             margin: 10px 0;
         }
@@ -138,83 +335,88 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid #e5e7eb;
+            padding: 14px;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s ease;
+        }
+        
+        .list-item:hover {
+            background: rgba(0,0,0,0.02);
         }
         
         .list-item:last-child {
             border-bottom: none;
         }
         
-        .small-btn {
-            padding: 5px 10px;
-            font-size: 12px;
-            border-radius: 5px;
-            border: none;
-            cursor: pointer;
-            margin-left: 5px;
-        }
-        
         .cart-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid #e5e7eb;
+            padding: 14px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .cart-item:last-child {
+            border-bottom: none;
         }
         
         .quantity-controls {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
         
         .quantity-btn {
-            width: 30px;
-            height: 30px;
-            border: 1px solid #e5e7eb;
-            background: white;
-            border-radius: 5px;
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
         }
         
-        .total-section {
-            background: #f8fafc;
-            border-radius: 10px;
-            padding: 15px;
-            margin: 15px 0;
-            border: 2px solid #e2e8f0;
+        .quantity-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
         }
         
-        .total-amount {
-            font-size: 24px;
-            font-weight: bold;
-            color: #4f46e5;
-            text-align: center;
-            margin: 10px 0;
-        }
-        
+        /* Tabs */
         .tab-buttons {
             display: flex;
             gap: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            background: var(--surface);
+            padding: 6px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
         }
         
         .tab-btn {
             flex: 1;
-            padding: 10px;
-            background: #e5e7eb;
+            padding: 12px;
+            background: transparent;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 12px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
         
         .tab-btn.active {
-            background: #4f46e5;
+            background: var(--primary);
             color: white;
+            box-shadow: var(--shadow);
         }
         
         .tab-content {
@@ -225,263 +427,308 @@
             display: block;
         }
         
-        .stock-info {
-            display: flex;
-            gap: 10px;
+        /* Status & Info */
+        .status-badge {
+            display: inline-flex;
             align-items: center;
-            margin-top: 5px;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
             font-size: 12px;
+            font-weight: 600;
         }
         
-        .stock-count {
-            font-weight: bold;
-            color: #059669;
+        .status-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-dark);
         }
         
-        .stock-sold {
-            color: #6b7280;
+        .status-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
         }
         
-        .admin-panel {
-            background: #f8fafc;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: 2px solid #e2e8f0;
+        .total-section {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: var(--shadow);
+            text-align: center;
         }
         
-        .barcode-result {
-            background: #10b981;
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
+        .total-amount {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary);
             margin: 10px 0;
-            text-align: center;
-            font-weight: bold;
         }
         
-        #barcode-scanner-container {
-            position: relative;
-            width: 100%;
-            height: 120px;
-            overflow: hidden;
-            border-radius: 10px;
-        }
-        
-        #barcode-scanner-container video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .camera-permission {
+        /* Exit Button */
+        .exit-btn {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            text-align: center;
-            width: 100%;
-        }
-        
-        .barcode-scan-frame {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 250px;
-            height: 80px;
-            border: 2px solid #10b981;
-            border-radius: 5px;
-            z-index: 10;
-            pointer-events: none;
-        }
-        
-        .barcode-scan-animation {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: #10b981;
-            animation: scan 1.5s infinite linear;
-            box-shadow: 0 0 8px #10b981;
-        }
-        
-        @keyframes scan {
-            0% { top: 0; }
-            100% { top: 100%; }
-        }
-        
-        .payment-info {
-            background: #f8fafc;
-            border-radius: 10px;
-            padding: 15px;
-            margin: 15px 0;
-            border: 2px solid #e2e8f0;
-            text-align: center;
-        }
-        
-        .exit-cash-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 20px;
+            right: 20px;
             background: rgba(239, 68, 68, 0.9);
             border: none;
-            border-radius: 5px;
-            padding: 5px 10px;
+            border-radius: 10px;
+            padding: 10px 15px;
             cursor: pointer;
             z-index: 100;
-            font-size: 12px;
+            font-size: 14px;
             color: white;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+        }
+        
+        .exit-btn:hover {
+            background: var(--danger);
+            transform: translateY(-2px);
+        }
+        
+        /* Empty States */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Header -->
         <div class="header">
+            <h1><i class="fas fa-wallet"></i> Sehriyo Pay</h1>
+            <p>Школьная платежная система</p>
             <div class="nav-buttons">
-                <button class="nav-btn" onclick="showScreen('cashScreen')">🏪 Касса</button>
-                <button class="nav-btn" onclick="showScreen('adminScreen')">⚙️ Админ</button>
+                <button class="nav-btn" onclick="showScreen('cashScreen')">
+                    <i class="fas fa-cash-register"></i> Касса
+                </button>
+                <button class="nav-btn" onclick="showScreen('adminScreen')">
+                    <i class="fas fa-cog"></i> Админ
+                </button>
             </div>
-            <h1>Sehriyo pay</h1>
         </div>
         
-        <!-- Касса -->
+        <!-- Cash Screen -->
         <div class="screen active" id="cashScreen">
-            <button class="exit-cash-btn" onclick="exitCash()">🚪 Выйти</button>
-            <h3 style="text-align: center; margin-bottom: 20px; color: #374151;">🏪 Касса самообслуживания</h3>
+            <button class="exit-btn" onclick="exitCash()">
+                <i class="fas fa-sign-out-alt"></i> Выйти
+            </button>
             
-            <!-- Сканер штрих-кодов -->
-            <div style="margin: 20px 0;">
-                <h4 style="text-align: center; margin-bottom: 10px;">📦 Сканирование штрих-кодов</h4>
-                <div id="barcode-scanner-container">
-                    <div class="barcode-scan-frame">
-                        <div class="barcode-scan-animation"></div>
+            <div class="screen-header">
+                <h2>Касса самообслуживания</h2>
+                <p>Сканируйте штрих-коды товаров для добавления в корзину</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-barcode"></i>
+                    <h3>Сканер штрих-кодов</h3>
+                </div>
+                
+                <div class="scanner-container">
+                    <div class="barcode-scanner-frame">
+                        <div class="barcode-scanner-animation"></div>
                     </div>
-                    <div class="camera-permission" id="cashCameraPermission">
-                        <div style="font-size: 24px; margin-bottom: 5px;">📷</div>
-                        <p style="font-size: 12px;">Камера для штрих-кодов</p>
+                    <div class="scanner-permission" id="cashCameraPermission">
+                        <i class="fas fa-camera" style="font-size: 32px; margin-bottom: 10px;"></i>
+                        <p>Камера для сканирования штрих-кодов</p>
+                        <p style="font-size: 12px; margin-top: 5px;">Наведите на штрих-код товара</p>
                     </div>
                     <video id="cashCameraVideo" autoplay playsinline></video>
                     <canvas id="cashCanvas" style="display: none;"></canvas>
                 </div>
-                <p style="text-align: center; color: #6b7280; font-size: 12px; margin-top: 5px;">
-                    Наведите на штрих-код товара
-                </p>
-                <div id="barcode-result" class="barcode-result" style="display: none;"></div>
+                
+                <div id="barcode-result" style="display: none; background: var(--success); color: white; padding: 12px; border-radius: 10px; margin-top: 10px; text-align: center; font-weight: 600;"></div>
             </div>
             
-            <div class="list" id="cartItems">
-                <div style="text-align: center; padding: 30px; color: #6b7280;">
-                    Корзина пуста<br>
-                    <small>Добавьте товары сканированием</small>
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-shopping-cart"></i>
+                    <h3>Корзина товаров</h3>
+                </div>
+                
+                <div class="list" id="cartItems">
+                    <div class="empty-state">
+                        <i class="fas fa-shopping-basket"></i>
+                        <h3>Корзина пуста</h3>
+                        <p>Добавьте товары с помощью сканера</p>
+                    </div>
                 </div>
             </div>
             
             <div class="total-section">
-                <h4 style="text-align: center;">Итого к оплате:</h4>
+                <h3>Итого к оплате</h3>
                 <div class="total-amount" id="totalAmount">0 элек</div>
+                <p style="color: var(--text-secondary); font-size: 14px;">Фиксированная сумма из чека</p>
             </div>
             
-            <div class="payment-info">
-                <p style="color: #6b7280; font-size: 14px; margin-bottom: 10px;">
-                    💡 <strong>Фиксированная оплата</strong><br>
-                    Будет списано точная сумма из чека
-                </p>
-            </div>
-            
-            <button class="btn btn-success" style="background: #10b981; font-size: 18px; padding: 20px;" onclick="processPayment()">
-                💳 ОПЛАТИТЬ ПОКУПКУ
+            <button class="btn btn-success" onclick="processPayment()">
+                <i class="fas fa-credit-card"></i> ОПЛАТИТЬ ПОКУПКУ
             </button>
         </div>
         
-        <!-- Админ панель -->
+        <!-- Admin Screen -->
         <div class="screen" id="adminScreen">
-            <button class="btn btn-secondary" onclick="showScreen('cashScreen')">← Назад в кассу</button>
-            <h3 style="text-align: center; margin-bottom: 20px; color: #374151;">⚙️ Панель администратора</h3>
-            
-            <div class="tab-buttons">
-                <button class="tab-btn active" onclick="switchTab('studentsTab')">👥 Ученики</button>
-                <button class="tab-btn" onclick="switchTab('productsTab')">📦 Товары</button>
-                <button class="tab-btn" onclick="switchTab('warehouseTab')">🏭 Склад</button>
+            <div class="screen-header">
+                <h2>Панель администратора</h2>
+                <p>Управление системой и данными</p>
             </div>
             
-            <!-- Вкладка учеников -->
+            <button class="btn btn-secondary" onclick="showScreen('cashScreen')">
+                <i class="fas fa-arrow-left"></i> Назад в кассу
+            </button>
+            
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="switchTab('studentsTab')">
+                    <i class="fas fa-users"></i> Ученики
+                </button>
+                <button class="tab-btn" onclick="switchTab('productsTab')">
+                    <i class="fas fa-boxes"></i> Товары
+                </button>
+                <button class="tab-btn" onclick="switchTab('warehouseTab')">
+                    <i class="fas fa-warehouse"></i> Склад
+                </button>
+            </div>
+            
+            <!-- Students Tab -->
             <div class="tab-content active" id="studentsTab">
-                <div class="admin-panel">
-                    <h4 style="text-align: center; margin-bottom: 15px;">Добавить ученика</h4>
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-user-plus"></i>
+                        <h3>Добавить ученика</h3>
+                    </div>
                     
                     <div class="input-group">
-                        <label>Имя и фамилия:</label>
+                        <label>Имя и фамилия</label>
                         <input type="text" id="newStudentName" placeholder="Саидамир Асходжаев">
                     </div>
                     
                     <div class="input-group">
-                        <label>Класс:</label>
+                        <label>Класс</label>
                         <input type="text" id="newStudentClass" placeholder="9-Д">
                     </div>
                     
                     <div class="input-group">
-                        <label>ID ученика (4 цифры):</label>
+                        <label>ID ученика</label>
                         <input type="text" id="newStudentId" placeholder="0001" maxlength="4">
                     </div>
                     
-                    <button class="btn btn-success" onclick="addNewStudent()">➕ Добавить ученика</button>
+                    <button class="btn btn-success" onclick="addNewStudent()">
+                        <i class="fas fa-plus"></i> Добавить ученика
+                    </button>
                 </div>
                 
-                <div class="admin-panel">
-                    <h4 style="text-align: center; margin-bottom: 15px;">Список учеников</h4>
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-list"></i>
+                        <h3>Список учеников</h3>
+                    </div>
+                    
                     <div class="list" id="studentsList">
-                        <!-- Список учеников -->
+                        <!-- Students will be loaded here -->
                     </div>
                 </div>
             </div>
             
-            <!-- Вкладка товаров -->
+            <!-- Products Tab -->
             <div class="tab-content" id="productsTab">
-                <div class="admin-panel">
-                    <h4 style="text-align: center; margin-bottom: 15px;">Добавить товар</h4>
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-plus-circle"></i>
+                        <h3>Добавить товар</h3>
+                    </div>
                     
                     <div class="input-group">
-                        <label>Название товара:</label>
+                        <label>Название товара</label>
                         <input type="text" id="newProductName" placeholder="Сникерс">
                     </div>
                     
                     <div class="input-group">
-                        <label>Штрих-код (13 цифр):</label>
+                        <label>Штрих-код</label>
                         <input type="text" id="newProductBarcode" placeholder="1234567890123" maxlength="13">
                     </div>
                     
                     <div class="input-group">
-                        <label>Цена (элек):</label>
+                        <label>Цена (элек)</label>
                         <input type="number" id="newProductPrice" placeholder="50" min="1">
                     </div>
                     
-                    <button class="btn btn-success" onclick="addNewProduct()">➕ Добавить товар</button>
+                    <button class="btn btn-success" onclick="addNewProduct()">
+                        <i class="fas fa-plus"></i> Добавить товар
+                    </button>
                 </div>
                 
-                <div class="admin-panel">
-                    <h4 style="text-align: center; margin-bottom: 15px;">Список товаров</h4>
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-box-open"></i>
+                        <h3>Список товаров</h3>
+                    </div>
+                    
                     <div class="list" id="productsList">
-                        <!-- Список товаров -->
+                        <!-- Products will be loaded here -->
                     </div>
                 </div>
             </div>
             
-            <!-- Вкладка склада -->
+            <!-- Warehouse Tab -->
             <div class="tab-content" id="warehouseTab">
-                <div class="admin-panel">
-                    <h4 style="text-align: center; margin-bottom: 15px;">Управление складом</h4>
-                    <p style="text-align: center; color: #6b7280; margin-bottom: 15px; font-size: 12px;">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-warehouse"></i>
+                        <h3>Управление складом</h3>
+                    </div>
+                    
+                    <p style="color: var(--text-secondary); text-align: center; margin-bottom: 15px;">
                         Остатки обновляются автоматически при продажах
                     </p>
                     
                     <div class="list" id="warehouseList">
-                        <!-- Список склада -->
+                        <!-- Warehouse items will be loaded here -->
                     </div>
                     
-                    <button class="btn btn-warning" onclick="updateAllStock()">🔄 Обновить все остатки</button>
+                    <button class="btn btn-warning" onclick="updateAllStock()">
+                        <i class="fas fa-sync-alt"></i> Обновить все остатки
+                    </button>
                 </div>
             </div>
         </div>
@@ -489,7 +736,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
     <script>
-        // Пароли
+        // Конфигурация
         const EXIT_CASH_PASSWORD = 'exit123';
         
         // Базы данных
@@ -498,12 +745,19 @@
         let warehouse = JSON.parse(localStorage.getItem('sehriyoWarehouse')) || {};
         let cart = [];
         
-        // Камеры
+        // Состояние системы
         let isProcessing = false;
         let isBarcodeScannerActive = false;
         
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeData();
+            startBarcodeScanner();
+        });
+        
         // Инициализация данных
         function initializeData() {
+            // Инициализация демо-данных, если нет сохраненных
             if (Object.keys(students).length === 0) {
                 students = {
                     '0001': { id: '0001', firstName: 'Саидамир', lastName: 'Асходжаев', class: '9-Д', balance: 500 },
@@ -541,11 +795,9 @@
             renderStudentsList();
             renderProductsList();
             renderWarehouseList();
-            
-            // Запускаем сканер при загрузке
-            startBarcodeScanner();
         }
         
+        // Сохранение данных
         function saveStudents() {
             localStorage.setItem('sehriyoStudents', JSON.stringify(students));
         }
@@ -558,19 +810,22 @@
             localStorage.setItem('sehriyoWarehouse', JSON.stringify(warehouse));
         }
         
-        // Выход из кассы с паролем
-        function exitCash() {
-            const password = prompt('Введите пароль для выхода из кассы:');
-            if (password === EXIT_CASH_PASSWORD) {
-                if (confirm('Вы уверены, что хотите выйти из кассы?')) {
-                    window.close();
-                }
-            } else {
-                alert('❌ Неверный пароль!');
+        // Навигация
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+            
+            if (screenId === 'cashScreen') {
+                startBarcodeScanner();
+            } else if (screenId === 'adminScreen') {
+                renderStudentsList();
+                renderProductsList();
+                renderWarehouseList();
             }
         }
         
-        // Переключение вкладок
         function switchTab(tabId) {
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.classList.remove('active');
@@ -583,7 +838,19 @@
             document.getElementById(tabId).classList.add('active');
         }
         
-        // Сканер штрих-кодов с QuaggaJS
+        // Выход из кассы
+        function exitCash() {
+            const password = prompt('Введите пароль для выхода из кассы:');
+            if (password === EXIT_CASH_PASSWORD) {
+                if (confirm('Вы уверены, что хотите выйти из кассы?')) {
+                    window.close();
+                }
+            } else {
+                alert('❌ Неверный пароль!');
+            }
+        }
+        
+        // Сканер штрих-кодов
         function startBarcodeScanner() {
             if (isBarcodeScannerActive) return;
             
@@ -591,7 +858,7 @@
                 inputStream: {
                     name: "Live",
                     type: "LiveStream",
-                    target: document.querySelector('#barcode-scanner-container'),
+                    target: document.querySelector('.scanner-container'),
                     constraints: {
                         facingMode: "environment",
                         width: { min: 640, ideal: 1280, max: 1920 },
@@ -615,18 +882,21 @@
                 if (err) {
                     console.log(err);
                     document.getElementById('cashCameraPermission').innerHTML = `
-                        <div style="color: #ef4444;">❌ Ошибка сканера</div>
-                        <p style="font-size: 12px; margin-top: 5px;">Используйте ручной ввод штрих-кода</p>
-                        <input type="text" id="manualBarcodeInput" placeholder="Введите штрих-код" 
-                               style="padding: 8px; margin: 10px 0; width: 80%; border-radius: 5px; border: 1px solid #ccc;">
-                        <button onclick="manualBarcodeInput()" 
-                                style="padding: 8px 15px; background: #4f46e5; color: white; border: none; border-radius: 5px;">
-                            Добавить
-                        </button>
+                        <div style="color: #ef4444;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 32px; margin-bottom: 10px;"></i>
+                            <p>Ошибка сканера</p>
+                            <p style="font-size: 12px; margin-top: 5px;">Используйте ручной ввод штрих-кода</p>
+                            <input type="text" id="manualBarcodeInput" placeholder="Введите штрих-код" 
+                                   style="padding: 10px; margin: 10px 0; width: 80%; border-radius: 8px; border: 1px solid #ccc; text-align: center;">
+                            <button onclick="manualBarcodeInput()" 
+                                    style="padding: 10px 15px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: 600;">
+                                Добавить товар
+                            </button>
+                        </div>
                     `;
                     return;
                 }
-                console.log("Сканер штрих-кодов инициализирован");
+                
                 document.getElementById('cashCameraPermission').style.display = 'none';
                 Quagga.start();
                 isBarcodeScannerActive = true;
@@ -640,44 +910,32 @@
                 
                 const code = result.codeResult.code;
                 
-                // Защита от повторного сканирования того же кода
+                // Защита от повторного сканирования
                 if (code === lastScannedCode) return;
                 
                 isProcessing = true;
                 lastScannedCode = code;
                 
-                console.log("Штрих-код обнаружен: ", code);
-                
-                // Показываем результат
+                // Визуальный фидбек
                 const resultElement = document.getElementById('barcode-result');
-                resultElement.textContent = `📦 Найден: ${code}`;
+                resultElement.textContent = `📦 Найден штрих-код: ${code}`;
                 resultElement.style.display = 'block';
                 resultElement.style.background = '#f59e0b';
                 
-                // Добавляем товар в корзину
+                // Добавляем товар
                 addToCart(code);
                 
-                // Сбрасываем защиту через 2 секунды
+                // Сбрасываем состояние
                 setTimeout(() => {
                     isProcessing = false;
                     resultElement.style.display = 'none';
                 }, 2000);
                 
-                // Автосброс lastScannedCode через 5 секунд
                 clearTimeout(scanTimeout);
                 scanTimeout = setTimeout(() => {
                     lastScannedCode = '';
                 }, 5000);
             });
-        }
-        
-        // Ручной ввод штрих-кода
-        function manualBarcodeInput() {
-            const barcode = document.getElementById('manualBarcodeInput').value.trim();
-            if (barcode) {
-                addToCart(barcode);
-                document.getElementById('manualBarcodeInput').value = '';
-            }
         }
         
         function stopBarcodeScanner() {
@@ -687,19 +945,164 @@
             }
         }
         
-        // Переключение экранов
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(screen => {
-                screen.classList.remove('active');
-            });
-            document.getElementById(screenId).classList.add('active');
+        // Ручной ввод штрих-кода
+        function manualBarcodeInput() {
+            const barcode = document.getElementById('manualBarcodeInput').value.trim();
+            if (barcode) {
+                addToCart(barcode);
+                document.getElementById('manualBarcodeInput').value = '';
+                
+                const resultElement = document.getElementById('barcode-result');
+                resultElement.textContent = `✅ Товар добавлен по коду: ${barcode}`;
+                resultElement.style.display = 'block';
+                resultElement.style.background = '#10b981';
+                
+                setTimeout(() => {
+                    resultElement.style.display = 'none';
+                }, 2000);
+            }
+        }
+        
+        // Корзина товаров
+        function addToCart(barcode) {
+            const product = products[barcode];
+            if (product) {
+                // Проверка наличия на складе
+                const stockItem = warehouse[barcode];
+                if (!stockItem || stockItem.stock <= 0) {
+                    alert(`❌ ${product.name} закончился на складе!`);
+                    return;
+                }
+                
+                const existingItem = cart.find(item => item.barcode === barcode);
+                if (existingItem) {
+                    if (existingItem.quantity >= stockItem.stock) {
+                        alert(`❌ Максимум ${stockItem.stock} шт. ${product.name} на складе!`);
+                        return;
+                    }
+                    existingItem.quantity++;
+                } else {
+                    cart.push({
+                        barcode: barcode,
+                        name: product.name,
+                        price: product.price,
+                        quantity: 1
+                    });
+                }
+                renderCart();
+                
+                // Визуальное подтверждение
+                const resultElement = document.getElementById('barcode-result');
+                resultElement.textContent = `✅ Добавлен: ${product.name}`;
+                resultElement.style.display = 'block';
+                resultElement.style.background = '#10b981';
+                
+            } else {
+                const resultElement = document.getElementById('barcode-result');
+                resultElement.textContent = `❌ Товар не найден: ${barcode}`;
+                resultElement.style.display = 'block';
+                resultElement.style.background = '#ef4444';
+            }
+        }
+        
+        function updateQuantity(barcode, change) {
+            const item = cart.find(item => item.barcode === barcode);
+            if (item) {
+                item.quantity += change;
+                if (item.quantity <= 0) {
+                    cart = cart.filter(item => item.barcode !== barcode);
+                }
+                renderCart();
+            }
+        }
+        
+        function renderCart() {
+            const cartItems = document.getElementById('cartItems');
+            const totalAmount = document.getElementById('totalAmount');
             
-            if (screenId === 'cashScreen') {
-                startBarcodeScanner();
-            } else if (screenId === 'adminScreen') {
-                renderStudentsList();
-                renderProductsList();
-                renderWarehouseList();
+            if (cart.length === 0) {
+                cartItems.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-shopping-basket"></i>
+                        <h3>Корзина пуста</h3>
+                        <p>Добавьте товары с помощью сканера</p>
+                    </div>
+                `;
+                totalAmount.textContent = '0 элек';
+                return;
+            }
+            
+            let total = 0;
+            cartItems.innerHTML = '';
+            
+            cart.forEach(item => {
+                total += item.price * item.quantity;
+                
+                const itemElement = document.createElement('div');
+                itemElement.className = 'cart-item fade-in';
+                itemElement.innerHTML = `
+                    <div>
+                        <strong>${item.name}</strong>
+                        <div style="color: var(--text-secondary); font-size: 14px; margin-top: 4px;">
+                            ${item.price} элек × ${item.quantity} = ${item.price * item.quantity} элек
+                        </div>
+                    </div>
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" onclick="updateQuantity('${item.barcode}', -1)">-</button>
+                        <span style="min-width: 20px; text-align: center; font-weight: 600;">${item.quantity}</span>
+                        <button class="quantity-btn" onclick="updateQuantity('${item.barcode}', 1)">+</button>
+                        <button class="quantity-btn" style="background: #ef4444; color: white; border-color: #ef4444;" onclick="updateQuantity('${item.barcode}', -${item.quantity})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                cartItems.appendChild(itemElement);
+            });
+            
+            totalAmount.textContent = total + ' элек';
+        }
+        
+        // Оплата покупки
+        function processPayment() {
+            if (cart.length === 0) {
+                alert('❌ Корзина пуста!');
+                return;
+            }
+            
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            // Проверка наличия товаров
+            for (let item of cart) {
+                const stockItem = warehouse[item.barcode];
+                if (!stockItem || stockItem.stock < item.quantity) {
+                    alert(`❌ Недостаточно ${item.name} на складе!`);
+                    return;
+                }
+            }
+            
+            // Показ чека
+            let receipt = `🧾 ЧЕК ПОКУПКИ\n\n`;
+            cart.forEach(item => {
+                receipt += `${item.name} - ${item.quantity} × ${item.price} элек = ${item.quantity * item.price} элек\n`;
+            });
+            receipt += `\n💰 ИТОГО: ${total} элек\n\n`;
+            receipt += `✅ ОПЛАЧЕНО`;
+            
+            if (confirm(`Подтвердите оплату на сумму ${total} элек?\n\n${receipt}`)) {
+                // Обновление склада
+                cart.forEach(item => {
+                    if (warehouse[item.barcode]) {
+                        warehouse[item.barcode].stock -= item.quantity;
+                        warehouse[item.barcode].sold += item.quantity;
+                    }
+                });
+                saveWarehouse();
+                
+                // Очистка корзины
+                cart = [];
+                renderCart();
+                
+                alert(`✅ Оплата на сумму ${total} элек прошла успешно!\n\nСпасибо за покупку!`);
             }
         }
         
@@ -731,6 +1134,7 @@
             saveStudents();
             renderStudentsList();
             
+            // Очистка формы
             document.getElementById('newStudentName').value = '';
             document.getElementById('newStudentClass').value = '';
             document.getElementById('newStudentId').value = '';
@@ -742,24 +1146,37 @@
             const list = document.getElementById('studentsList');
             list.innerHTML = '';
             
+            if (Object.keys(students).length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <h3>Нет учеников</h3>
+                        <p>Добавьте первого ученика</p>
+                    </div>
+                `;
+                return;
+            }
+            
             Object.values(students).forEach(student => {
                 const item = document.createElement('div');
-                item.className = 'list-item';
+                item.className = 'list-item fade-in';
                 item.innerHTML = `
                     <div>
                         <strong>${student.firstName} ${student.lastName}</strong>
-                        <div style="font-size: 12px; color: #6b7280;">
+                        <div style="font-size: 14px; color: var(--text-secondary); margin-top: 4px;">
                             ${student.class} | ID: ${student.id} | Баланс: ${student.balance} элек
                         </div>
                     </div>
-                    <button class="small-btn" style="background: #ef4444; color: white;" onclick="deleteStudent('${student.id}')">Удалить</button>
+                    <button class="quantity-btn" style="background: #ef4444; color: white; border-color: #ef4444;" onclick="deleteStudent('${student.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 `;
                 list.appendChild(item);
             });
         }
         
         function deleteStudent(id) {
-            if (confirm('Удалить ученика ' + students[id].firstName + ' ' + students[id].lastName + '?')) {
+            if (confirm(`Удалить ученика ${students[id].firstName} ${students[id].lastName}?`)) {
                 delete students[id];
                 saveStudents();
                 renderStudentsList();
@@ -788,7 +1205,7 @@
                 price: price
             };
             
-            // Добавляем товар на склад
+            // Добавление на склад
             warehouse[barcode] = {
                 barcode: barcode,
                 name: name,
@@ -801,6 +1218,7 @@
             renderProductsList();
             renderWarehouseList();
             
+            // Очистка формы
             document.getElementById('newProductName').value = '';
             document.getElementById('newProductBarcode').value = '';
             document.getElementById('newProductPrice').value = '';
@@ -812,24 +1230,37 @@
             const list = document.getElementById('productsList');
             list.innerHTML = '';
             
+            if (Object.keys(products).length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-box-open"></i>
+                        <h3>Нет товаров</h3>
+                        <p>Добавьте первый товар</p>
+                    </div>
+                `;
+                return;
+            }
+            
             Object.values(products).forEach(product => {
                 const item = document.createElement('div');
-                item.className = 'list-item';
+                item.className = 'list-item fade-in';
                 item.innerHTML = `
                     <div>
                         <strong>${product.name}</strong>
-                        <div style="font-size: 12px; color: #6b7280;">
+                        <div style="font-size: 14px; color: var(--text-secondary); margin-top: 4px;">
                             Штрих-код: ${product.barcode} | Цена: ${product.price} элек
                         </div>
                     </div>
-                    <button class="small-btn" style="background: #ef4444; color: white;" onclick="deleteProduct('${product.barcode}')">Удалить</button>
+                    <button class="quantity-btn" style="background: #ef4444; color: white; border-color: #ef4444;" onclick="deleteProduct('${product.barcode}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 `;
                 list.appendChild(item);
             });
         }
         
         function deleteProduct(barcode) {
-            if (confirm('Удалить товар ' + products[barcode].name + '?')) {
+            if (confirm(`Удалить товар ${products[barcode].name}?`)) {
                 delete products[barcode];
                 delete warehouse[barcode];
                 saveProducts();
@@ -844,23 +1275,42 @@
             const list = document.getElementById('warehouseList');
             list.innerHTML = '';
             
+            if (Object.keys(warehouse).length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-warehouse"></i>
+                        <h3>Склад пуст</h3>
+                        <p>Добавьте товары в систему</p>
+                    </div>
+                `;
+                return;
+            }
+            
             Object.values(warehouse).forEach(item => {
                 const itemElement = document.createElement('div');
-                itemElement.className = 'list-item';
+                itemElement.className = 'list-item fade-in';
                 itemElement.innerHTML = `
                     <div>
                         <strong>${item.name}</strong>
-                        <div style="font-size: 12px; color: #6b7280;">
+                        <div style="font-size: 14px; color: var(--text-secondary); margin-top: 4px;">
                             Штрих-код: ${item.barcode}
                         </div>
-                        <div class="stock-info">
-                            <span class="stock-count">📦 ${item.stock} шт.</span>
-                            <span class="stock-sold">💰 Продано: ${item.sold} шт.</span>
+                        <div style="display: flex; gap: 15px; margin-top: 8px;">
+                            <span class="status-badge status-success">
+                                <i class="fas fa-box"></i> ${item.stock} шт.
+                            </span>
+                            <span class="status-badge status-warning">
+                                <i class="fas fa-chart-line"></i> Продано: ${item.sold} шт.
+                            </span>
                         </div>
                     </div>
-                    <div>
-                        <button class="small-btn btn-success" onclick="addStock('${item.barcode}')">➕</button>
-                        <button class="small-btn btn-warning" onclick="setStock('${item.barcode}')">✏️</button>
+                    <div style="display: flex; gap: 5px;">
+                        <button class="quantity-btn" style="background: #10b981; color: white; border-color: #10b981;" onclick="addStock('${item.barcode}')">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="quantity-btn" style="background: #f59e0b; color: white; border-color: #f59e0b;" onclick="setStock('${item.barcode}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
                     </div>
                 `;
                 list.appendChild(itemElement);
@@ -891,146 +1341,7 @@
             alert('✅ Все остатки обновлены!');
         }
         
-        // Касса - сканирование штрих-кодов
-        function addToCart(barcode) {
-            const product = products[barcode];
-            if (product) {
-                // Проверяем наличие на складе
-                const stockItem = warehouse[barcode];
-                if (!stockItem || stockItem.stock <= 0) {
-                    alert(`❌ ${product.name} закончился на складе!`);
-                    return;
-                }
-                
-                const existingItem = cart.find(item => item.barcode === barcode);
-                if (existingItem) {
-                    // Проверяем, не превышаем ли остаток на складе
-                    if (existingItem.quantity >= stockItem.stock) {
-                        alert(`❌ Максимум ${stockItem.stock} шт. ${product.name} на складе!`);
-                        return;
-                    }
-                    existingItem.quantity++;
-                } else {
-                    cart.push({
-                        barcode: barcode,
-                        name: product.name,
-                        price: product.price,
-                        quantity: 1
-                    });
-                }
-                renderCart();
-                
-                // Показываем уведомление о добавлении
-                const resultElement = document.getElementById('barcode-result');
-                resultElement.textContent = `✅ Добавлен: ${product.name}`;
-                resultElement.style.display = 'block';
-                resultElement.style.background = '#10b981';
-                
-            } else {
-                const resultElement = document.getElementById('barcode-result');
-                resultElement.textContent = `❌ Товар не найден: ${barcode}`;
-                resultElement.style.display = 'block';
-                resultElement.style.background = '#ef4444';
-            }
-        }
-        
-        function updateQuantity(barcode, change) {
-            const item = cart.find(item => item.barcode === barcode);
-            if (item) {
-                item.quantity += change;
-                if (item.quantity <= 0) {
-                    cart = cart.filter(item => item.barcode !== barcode);
-                }
-                renderCart();
-            }
-        }
-        
-        function renderCart() {
-            const cartItems = document.getElementById('cartItems');
-            const totalAmount = document.getElementById('totalAmount');
-            
-            if (cart.length === 0) {
-                cartItems.innerHTML = `
-                    <div style="text-align: center; padding: 30px; color: #6b7280;">
-                        Корзина пуста<br>
-                        <small>Добавьте товары сканированием</small>
-                    </div>
-                `;
-                totalAmount.textContent = '0 элек';
-                return;
-            }
-            
-            let total = 0;
-            cartItems.innerHTML = '';
-            
-            cart.forEach(item => {
-                total += item.price * item.quantity;
-                
-                const itemElement = document.createElement('div');
-                itemElement.className = 'cart-item';
-                itemElement.innerHTML = `
-                    <div>
-                        <strong>${item.name}</strong>
-                        <div>${item.price} элек × ${item.quantity}</div>
-                    </div>
-                    <div class="quantity-controls">
-                        <button class="quantity-btn" onclick="updateQuantity('${item.barcode}', -1)">-</button>
-                        <span style="min-width: 20px; text-align: center;">${item.quantity}</span>
-                        <button class="quantity-btn" onclick="updateQuantity('${item.barcode}', 1)">+</button>
-                        <button class="small-btn" style="background: #ef4444; color: white; margin-left: 10px;" onclick="updateQuantity('${item.barcode}', -${item.quantity})">🗑️</button>
-                    </div>
-                `;
-                cartItems.appendChild(itemElement);
-            });
-            
-            totalAmount.textContent = total + ' элек';
-        }
-        
-        function processPayment() {
-            if (cart.length === 0) {
-                alert('❌ Корзина пуста!');
-                return;
-            }
-            
-            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            
-            // Проверяем наличие всех товаров на складе перед оплатой
-            for (let item of cart) {
-                const stockItem = warehouse[item.barcode];
-                if (!stockItem || stockItem.stock < item.quantity) {
-                    alert(`❌ Недостаточно ${item.name} на складе!`);
-                    return;
-                }
-            }
-            
-            // Показываем чек
-            let receipt = `🧾 ЧЕК ПОКУПКИ\n\n`;
-            cart.forEach(item => {
-                receipt += `${item.name} - ${item.quantity} × ${item.price} элек = ${item.quantity * item.price} элек\n`;
-            });
-            receipt += `\n💰 ИТОГО: ${total} элек\n\n`;
-            receipt += `✅ ОПЛАЧЕНО`;
-            
-            alert(receipt);
-            
-            // Обновляем склад после успешной оплаты
-            cart.forEach(item => {
-                if (warehouse[item.barcode]) {
-                    warehouse[item.barcode].stock -= item.quantity;
-                    warehouse[item.barcode].sold += item.quantity;
-                }
-            });
-            saveWarehouse();
-            
-            // Очищаем корзину
-            cart = [];
-            renderCart();
-        }
-        
-        // Инициализация при загрузке
-        initializeData();
-        
-        // Остановка сканера при закрытии
+        // Очистка при закрытии
         window.addEventListener('beforeunload', stopBarcodeScanner);
     </script>
 </body>
