@@ -380,6 +380,15 @@
             margin-bottom: 15px;
             border: 2px solid #e2e8f0;
         }
+        
+        .test-barcode {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #e5e7eb;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -432,7 +441,7 @@
                 
                 <p style="color: #6b7280; margin: 10px 0;">Или введите ID вручную</p>
                 
-                <input type="text" class="qr-input" id="manualStudentId" placeholder="0001" maxlength="4" onkeypress="handleManualInput(event)">
+                <input type="text" id="manualStudentId" placeholder="0001" maxlength="4" onkeypress="handleManualInput(event)" style="width: 100%; padding: 12px; border: 2px solid #4f46e5; border-radius: 8px; font-size: 16px; text-align: center;">
                 <button class="btn btn-success" onclick="findStudent()">🔍 Найти ученика</button>
             </div>
             
@@ -559,23 +568,34 @@
             <button class="btn btn-secondary" onclick="showScreen('mainScreen')">← Назад</button>
             <h3 style="text-align: center; margin-bottom: 20px; color: #374151;">🏪 Касса самообслуживания</h3>
             
+            <div class="test-barcode">
+                <h4>📋 Тестовые штрих-коды:</h4>
+                <p style="font-size: 14px; color: #6b7280; margin: 10px 0;">
+                    Нажмите на штрих-код для добавления в корзину
+                </p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <button class="btn btn-success" onclick="addToCart('1234567890123')" style="font-size: 12px; padding: 10px;">🍫 Сникерс</button>
+                    <button class="btn btn-success" onclick="addToCart('1234567890124')" style="font-size: 12px; padding: 10px;">🥤 Кола</button>
+                    <button class="btn btn-success" onclick="addToCart('1234567890125')" style="font-size: 12px; padding: 10px;">💧 Вода</button>
+                    <button class="btn btn-success" onclick="addToCart('1234567890126')" style="font-size: 12px; padding: 10px;">🍫 Шоколад</button>
+                </div>
+            </div>
+            
             <!-- Маленькая камера для штрих-кодов -->
             <div style="margin: 20px 0;">
-                <h4 style="text-align: center; margin-bottom: 10px;">📦 Сканирование штрих-кодов</h4>
+                <h4 style="text-align: center; margin-bottom: 10px;">📦 Сканирование штрих-кодов (в разработке)</h4>
                 <div class="small-camera-section">
                     <div class="barcode-scan-frame">
                         <div class="barcode-scan-animation"></div>
                     </div>
                     <div class="camera-permission" id="cashCameraPermission">
                         <div style="font-size: 24px; margin-bottom: 5px;">📷</div>
-                        <p style="font-size: 12px;">Камера для штрих-кодов</p>
+                        <p style="font-size: 12px;">Сканирование штрих-кодов</p>
+                        <p style="font-size: 10px; color: #f59e0b;">Используйте тестовые кнопки выше</p>
                     </div>
                     <video class="small-camera-video" id="cashCameraVideo" autoplay playsinline></video>
                     <canvas id="cashCanvas" style="display: none;"></canvas>
                 </div>
-                <p style="text-align: center; color: #6b7280; font-size: 12px; margin-top: 5px;">
-                    Наведите на штрих-код товара
-                </p>
             </div>
             
             <div class="list" id="cartItems">
@@ -762,13 +782,11 @@
                 document.getElementById('cashCameraPermission').style.display = 'none';
                 cashCameraStream = stream;
                 
-                startBarcodeScanning(video, 'cashCanvas');
-                
             } catch (error) {
                 console.log('Камера кассы не доступна: ' + error);
                 document.getElementById('cashCameraPermission').innerHTML = `
                     <div style="color: #ef4444;">❌ Камера недоступна</div>
-                    <p style="font-size: 12px; margin-top: 5px;">Используйте сканирование штрих-кодов</p>
+                    <p style="font-size: 12px; margin-top: 5px;">Используйте тестовые кнопки</p>
                 `;
             }
         }
@@ -794,24 +812,6 @@
                             isProcessing = false;
                         }, 2000);
                     }
-                }
-                requestAnimationFrame(scan);
-            }
-            scan();
-        }
-        
-        function startBarcodeScanning(video, canvasId) {
-            const canvas = document.getElementById(canvasId);
-            const context = canvas.getContext('2d');
-            
-            function scan() {
-                if (video.readyState === video.HAVE_ENOUGH_DATA && !isProcessing) {
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    
-                    // В реальном приложении здесь будет распознавание штрих-кодов
-                    // Сейчас просто показываем работающую камеру
                 }
                 requestAnimationFrame(scan);
             }
@@ -1153,7 +1153,7 @@
             alert('✅ Все остатки обновлены!');
         }
         
-        // Касса - только сканирование
+        // Касса - рабочие кнопки вместо сканирования
         function addToCart(barcode) {
             const product = products[barcode];
             if (product) {
@@ -1181,6 +1181,14 @@
                     });
                 }
                 renderCart();
+                
+                // Визуальная обратная связь
+                const button = event.target;
+                button.style.background = '#10b981';
+                setTimeout(() => {
+                    button.style.background = '';
+                }, 300);
+                
             } else {
                 alert('❌ Товар не найден');
             }
