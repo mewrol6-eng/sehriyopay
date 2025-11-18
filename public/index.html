@@ -35,6 +35,7 @@
             text-align: center;
             position: relative;
             height: 70px;
+            z-index: 1000;
         }
         
         .header h1 {
@@ -53,6 +54,7 @@
             border-radius: 15px;
             cursor: pointer;
             font-size: 10px;
+            z-index: 1001;
         }
         
         .cash-btn {
@@ -66,6 +68,7 @@
             border-radius: 15px;
             cursor: pointer;
             font-size: 10px;
+            z-index: 1001;
         }
         
         .exit-cash-btn {
@@ -86,6 +89,7 @@
             display: none;
             height: calc(100vh - 70px);
             overflow: hidden;
+            position: relative;
         }
         
         .active {
@@ -572,6 +576,33 @@
         #canvas, #cash-canvas, #payment-canvas {
             display: none;
         }
+        
+        /* Главный экран с камерой */
+        .main-camera-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+        
+        #camera-container {
+            width: 300px;
+            height: 300px;
+            border: 2px solid #4f46e5;
+            border-radius: 15px;
+            background: #000;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #camera-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
     </style>
 </head>
 <body>
@@ -596,50 +627,48 @@
         
         <!-- Главный экран (QR сканирование) -->
         <div class="screen" id="mainScreen">
-            <div style="padding: 15px; height: 100%; display: flex; flex-direction: column;">
+            <div class="main-camera-container">
                 <h3 style="text-align: center; margin-bottom: 15px; color: #374151; font-size: 16px;">📷 Сканирование QR-кода ученика</h3>
                 
-                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                    <div id="camera-container" style="width: 300px; height: 300px; border: 2px solid #4f46e5; border-radius: 15px; background: #000; position: relative;">
-                        <div class="payment-frame">
-                            <div class="payment-scan-animation"></div>
-                        </div>
-                        <div class="camera-permission" id="cameraPermission">
-                            <h3>📸 Камера готова</h3>
-                            <p>Наведите на QR-код ученика</p>
-                        </div>
-                        <video id="camera-video" autoplay playsinline></video>
-                        <canvas id="canvas"></canvas>
+                <div id="camera-container">
+                    <div class="payment-frame">
+                        <div class="payment-scan-animation"></div>
                     </div>
-                    
-                    <div class="student-card" id="studentInfo" style="display: none; margin-top: 15px; width: 100%; max-width: 400px;">
-                        <h4 style="text-align: center; margin-bottom: 15px; color: #374151; font-size: 14px;">👨‍🎓 Информация об ученике</h4>
-                        
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-                            <div style="padding: 10px; background: white; border-radius: 6px; border: 1px solid #e2e8f0;">
-                                <div style="font-size: 10px; color: #6b7280; margin-bottom: 2px; text-transform: uppercase; font-weight: 600;">Имя Фамилия</div>
-                                <div style="font-weight: 700; color: #1f2937; font-size: 14px;" id="studentName">-</div>
-                            </div>
-                            <div style="padding: 10px; background: white; border-radius: 6px; border: 1px solid #e2e8f0;">
-                                <div style="font-size: 10px; color: #6b7280; margin-bottom: 2px; text-transform: uppercase; font-weight: 600;">Класс</div>
-                                <div style="font-weight: 700; color: #1f2937; font-size: 14px;" id="studentClass">-</div>
-                            </div>
-                        </div>
-                        
-                        <div style="text-align: center; font-size: 24px; font-weight: bold; color: #059669; margin: 15px 0; padding: 12px; background: white; border-radius: 8px; border: 2px solid #10b981;" id="studentBalance">0 элек</div>
-                        
-                        <div style="margin: 15px 0;">
-                            <input type="number" id="amount" placeholder="0" min="1" value="100" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 18px; font-weight: bold; text-align: center; color: #1f2937;">
-                        </div>
-                        
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
-                            <button class="btn btn-success" onclick="addBalance()">💵 Пополнить</button>
-                            <button class="btn btn-danger" onclick="subtractBalance()">💰 Списать</button>
-                        </div>
+                    <div class="camera-permission" id="cameraPermission">
+                        <h3>📸 Камера готова</h3>
+                        <p>Наведите на QR-код ученика</p>
                     </div>
-                    
-                    <div class="status-message" id="operationMessage"></div>
+                    <video id="camera-video" autoplay playsinline></video>
+                    <canvas id="canvas"></canvas>
                 </div>
+                
+                <div class="student-card" id="studentInfo" style="display: none; margin-top: 15px; width: 100%; max-width: 400px;">
+                    <h4 style="text-align: center; margin-bottom: 15px; color: #374151; font-size: 14px;">👨‍🎓 Информация об ученике</h4>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                        <div style="padding: 10px; background: white; border-radius: 6px; border: 1px solid #e2e8f0;">
+                            <div style="font-size: 10px; color: #6b7280; margin-bottom: 2px; text-transform: uppercase; font-weight: 600;">Имя Фамилия</div>
+                            <div style="font-weight: 700; color: #1f2937; font-size: 14px;" id="studentName">-</div>
+                        </div>
+                        <div style="padding: 10px; background: white; border-radius: 6px; border: 1px solid #e2e8f0;">
+                            <div style="font-size: 10px; color: #6b7280; margin-bottom: 2px; text-transform: uppercase; font-weight: 600;">Класс</div>
+                            <div style="font-weight: 700; color: #1f2937; font-size: 14px;" id="studentClass">-</div>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; font-size: 24px; font-weight: bold; color: #059669; margin: 15px 0; padding: 12px; background: white; border-radius: 8px; border: 2px solid #10b981;" id="studentBalance">0 элек</div>
+                    
+                    <div style="margin: 15px 0;">
+                        <input type="number" id="amount" placeholder="0" min="1" value="100" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 18px; font-weight: bold; text-align: center; color: #1f2937;">
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+                        <button class="btn btn-success" onclick="addBalance()">💵 Пополнить</button>
+                        <button class="btn btn-danger" onclick="subtractBalance()">💰 Списать</button>
+                    </div>
+                </div>
+                
+                <div class="status-message" id="operationMessage"></div>
             </div>
         </div>
         
@@ -915,8 +944,8 @@
             });
             document.getElementById(screenId).classList.add('active');
             
-            // Показываем кнопки
-            if (screenId !== 'cashScreen' && screenId !== 'paymentScreen' && screenId !== 'successScreen') {
+            // Показываем кнопки только на главном экране
+            if (screenId === 'mainScreen') {
                 document.getElementById('adminBtn').style.display = 'block';
                 document.getElementById('cashBtn').style.display = 'block';
             } else {
