@@ -16,14 +16,12 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            margin: 0;
         }
         
         .container {
             background: white;
-            width: 100%;
+            width: 100vw;
             height: 100vh;
             max-width: 100%;
             position: relative;
@@ -33,43 +31,18 @@
         .header {
             background: #4f46e5;
             color: white;
-            padding: 20px;
+            padding: 15px 20px;
             text-align: center;
             position: relative;
+            height: 70px;
         }
         
         .header h1 {
-            font-size: 24px;
-            margin-bottom: 5px;
+            font-size: 20px;
+            margin: 0;
         }
         
         .admin-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        
-        .cash-btn {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        
-        .exit-cash-btn {
             position: absolute;
             top: 15px;
             right: 15px;
@@ -80,13 +53,38 @@
             border-radius: 15px;
             cursor: pointer;
             font-size: 10px;
+        }
+        
+        .cash-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 10px;
+        }
+        
+        .exit-cash-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 5px 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 9px;
             z-index: 100;
         }
         
         .screen {
-            padding: 0;
             display: none;
-            height: calc(100vh - 80px);
+            height: calc(100vh - 70px);
             overflow: hidden;
         }
         
@@ -94,92 +92,10 @@
             display: block;
         }
         
-        .input-group {
-            margin-bottom: 25px;
-        }
-        
-        .input-group label {
-            display: block;
-            margin-bottom: 10px;
-            font-weight: 600;
-            color: #374151;
-            font-size: 16px;
-        }
-        
-        .input-group input, .input-group select {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s;
-        }
-        
-        .input-group input:focus, .input-group select:focus {
-            outline: none;
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-        }
-        
-        .btn {
-            width: 100%;
-            padding: 15px;
-            background: #4f46e5;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-bottom: 10px;
-        }
-        
-        .btn:hover {
-            background: #4338ca;
-            transform: translateY(-2px);
-        }
-        
-        .btn:active {
-            transform: translateY(0);
-        }
-        
-        .btn-success {
-            background: #10b981;
-        }
-        
-        .btn-success:hover {
-            background: #059669;
-        }
-        
-        .btn-danger {
-            background: #ef4444;
-        }
-        
-        .btn-danger:hover {
-            background: #dc2626;
-        }
-        
-        .btn-warning {
-            background: #f59e0b;
-        }
-        
-        .btn-warning:hover {
-            background: #d97706;
-        }
-        
-        .btn-secondary {
-            background: #6b7280;
-        }
-        
-        .btn-secondary:hover {
-            background: #4b5563;
-        }
-        
         /* Касса - на весь экран */
         .cash-screen {
             background: white;
-            height: 100vh;
+            height: calc(100vh - 70px);
             display: flex;
             flex-direction: column;
         }
@@ -187,9 +103,16 @@
         .cash-header {
             background: #4f46e5;
             color: white;
-            padding: 20px;
+            padding: 15px;
             text-align: center;
             position: relative;
+            height: 60px;
+            flex-shrink: 0;
+        }
+        
+        .cash-header h1 {
+            font-size: 18px;
+            margin: 0;
         }
         
         .cash-content {
@@ -201,15 +124,16 @@
         
         .cart-section {
             flex: 1;
-            padding: 15px;
+            padding: 10px;
             overflow-y: auto;
         }
         
         .camera-section {
             background: #000;
-            height: 200px;
+            height: 120px; /* Уменьшил высоту камеры */
             position: relative;
             border-top: 2px solid #4f46e5;
+            flex-shrink: 0;
         }
         
         #cash-camera-container {
@@ -229,8 +153,14 @@
         
         .camera-permission {
             text-align: center;
-            padding: 20px;
+            padding: 10px;
             color: white;
+            font-size: 12px;
+        }
+        
+        .camera-permission h3 {
+            font-size: 14px;
+            margin-bottom: 5px;
         }
         
         .scan-frame {
@@ -238,10 +168,10 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 150px;
-            height: 80px;
+            width: 200px; /* Широкая рамка для штрих-кодов */
+            height: 40px; /* Низкая рамка */
             border: 2px solid #10b981;
-            border-radius: 10px;
+            border-radius: 5px;
             z-index: 10;
             pointer-events: none;
         }
@@ -251,10 +181,10 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 3px;
+            height: 2px;
             background: #10b981;
             animation: scan 2s infinite linear;
-            box-shadow: 0 0 10px #10b981;
+            box-shadow: 0 0 8px #10b981;
         }
         
         @keyframes scan {
@@ -263,20 +193,21 @@
         }
         
         .cart-items {
-            max-height: calc(100vh - 350px);
+            max-height: calc(100vh - 300px); /* Увеличил место для товаров */
             overflow-y: auto;
-            margin: 10px 0;
+            margin: 8px 0;
             border: 1px solid #e5e7eb;
             border-radius: 8px;
-            padding: 10px;
+            padding: 8px;
         }
         
         .cart-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px;
+            padding: 8px;
             border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
         }
         
         .cart-item:last-child {
@@ -290,47 +221,50 @@
         
         .cart-item-actions {
             display: flex;
-            gap: 5px;
+            gap: 4px;
             align-items: center;
         }
         
         .quantity-controls {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
         
         .quantity-btn {
-            width: 25px;
-            height: 25px;
+            width: 22px;
+            height: 22px;
             border: 1px solid #e5e7eb;
             background: white;
-            border-radius: 5px;
+            border-radius: 4px;
             cursor: pointer;
             font-weight: bold;
-            font-size: 12px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .quantity {
             font-weight: bold;
-            min-width: 25px;
+            min-width: 20px;
             text-align: center;
-            font-size: 14px;
+            font-size: 12px;
         }
         
         .total-section {
             background: #f8fafc;
             border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 15px;
-            margin: 10px 0;
+            border-radius: 10px;
+            padding: 12px;
+            margin: 8px 0;
         }
         
         .total-amount {
-            font-size: 28px;
+            font-size: 24px;
             font-weight: bold;
             color: #4f46e5;
-            margin: 10px 0;
+            margin: 8px 0;
             text-align: center;
         }
         
@@ -339,17 +273,17 @@
             color: white;
             border: none;
             border-radius: 10px;
-            padding: 15px;
-            font-size: 18px;
+            padding: 12px;
+            font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            margin: 10px;
+            margin: 8px;
         }
         
         /* Экран оплаты */
         .payment-screen {
             background: white;
-            height: 100vh;
+            height: calc(100vh - 70px);
             display: flex;
             flex-direction: column;
         }
@@ -360,17 +294,18 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 15px;
         }
         
         #payment-camera-container {
-            width: 300px;
-            height: 300px;
+            width: 250px; /* Уменьшил размер */
+            height: 250px;
             border: 2px solid #4f46e5;
             border-radius: 15px;
             overflow: hidden;
             position: relative;
             background: #000;
+            margin-bottom: 20px;
         }
         
         #payment-camera-video {
@@ -384,8 +319,8 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 200px;
-            height: 200px;
+            width: 180px;
+            height: 180px;
             border: 2px solid #10b981;
             border-radius: 10px;
             box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.3);
@@ -395,131 +330,105 @@
         
         .success-screen {
             background: white;
-            height: 100vh;
+            height: calc(100vh - 70px);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
+            padding: 20px;
         }
         
         .success-icon {
-            font-size: 80px;
+            font-size: 60px;
             color: #10b981;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         
         .success-message {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: bold;
             color: #059669;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         
         .success-details {
             color: #6b7280;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        /* Остальные стили */
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+            font-size: 14px;
+        }
+        
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 8px;
+        }
+        
+        .btn-success {
+            background: #10b981;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+        }
+        
+        .back-btn {
+            background: #6b7280;
+            color: white;
+            margin-bottom: 12px;
         }
         
         .status-message {
-            padding: 10px;
+            padding: 8px;
             border-radius: 5px;
-            margin: 10px 0;
+            margin: 8px 0;
             text-align: center;
             display: none;
+            font-size: 14px;
         }
         
-        .success {
+        .success-msg {
             background: #d1fae5;
             color: #065f46;
             border: 1px solid #a7f3d0;
         }
         
-        .error {
+        .error-msg {
             background: #fee2e2;
             color: #991b1b;
             border: 1px solid #fca5a5;
-        }
-        
-        .admin-panel {
-            background: #f8fafc;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-        
-        .admin-panel h3 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #374151;
-        }
-        
-        .student-list, .products-list {
-            max-height: 300px;
-            overflow-y: auto;
-            margin: 15px 0;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 10px;
-        }
-        
-        .student-item, .product-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        
-        .student-item:last-child, .product-item:last-child {
-            border-bottom: none;
-        }
-        
-        .student-details, .product-details {
-            flex: 1;
-        }
-        
-        .student-actions, .product-actions {
-            display: flex;
-            gap: 5px;
-        }
-        
-        .small-btn {
-            padding: 5px 10px;
-            font-size: 12px;
-            border-radius: 5px;
-            border: none;
-            cursor: pointer;
-        }
-        
-        .tab-buttons {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .tab-btn {
-            flex: 1;
-            padding: 10px;
-            background: #e5e7eb;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-        
-        .tab-btn.active {
-            background: #4f46e5;
-            color: white;
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
         }
         
         #canvas, #cash-canvas, #payment-canvas {
@@ -537,7 +446,7 @@
         
         <!-- Экран ввода пароля -->
         <div class="screen active" id="passwordScreen">
-            <div style="padding: 30px;">
+            <div style="padding: 20px; height: 100%; display: flex; flex-direction: column; justify-content: center;">
                 <div class="input-group">
                     <label for="password">🔒 Пароль продавца:</label>
                     <input type="password" id="password" placeholder="Введите пароль" autocomplete="off">
@@ -549,48 +458,50 @@
         
         <!-- Главный экран (QR сканирование) -->
         <div class="screen" id="mainScreen">
-            <div style="padding: 30px;">
-                <h3 style="text-align: center; margin-bottom: 20px; color: #374151;">📷 Сканирование QR-кода ученика</h3>
+            <div style="padding: 15px; height: 100%; display: flex; flex-direction: column;">
+                <h3 style="text-align: center; margin-bottom: 15px; color: #374151; font-size: 16px;">📷 Сканирование QR-кода ученика</h3>
                 
-                <div id="camera-container" style="width: 100%; max-width: 300px; height: 300px; margin: 20px auto; border: 2px solid #4f46e5; border-radius: 10px; background: #000; position: relative;">
-                    <div class="scan-frame" style="width: 200px; height: 200px;">
-                        <div class="scan-animation"></div>
-                    </div>
-                    <div class="camera-permission" id="cameraPermission">
-                        <h3>📸 Камера готова</h3>
-                        <p>Наведите на QR-код ученика</p>
-                    </div>
-                    <video id="camera-video" autoplay playsinline></video>
-                    <canvas id="canvas"></canvas>
-                </div>
-                
-                <div class="student-card" id="studentInfo" style="display: none;">
-                    <h4 style="text-align: center; margin-bottom: 20px; color: #374151;">👨‍🎓 Информация об ученике</h4>
-                    
-                    <div class="student-info">
-                        <div class="info-item">
-                            <div class="info-label">Имя Фамилия</div>
-                            <div class="info-value" id="studentName">-</div>
+                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+                    <div id="camera-container" style="width: 100%; max-width: 250px; height: 250px; margin: 0 auto; border: 2px solid #4f46e5; border-radius: 10px; background: #000; position: relative;">
+                        <div class="scan-frame" style="width: 180px; height: 180px;">
+                            <div class="scan-animation"></div>
                         </div>
-                        <div class="info-item">
-                            <div class="info-label">Класс</div>
-                            <div class="info-value" id="studentClass">-</div>
+                        <div class="camera-permission" id="cameraPermission">
+                            <h3>📸 Камера готова</h3>
+                            <p>Наведите на QR-код ученика</p>
+                        </div>
+                        <video id="camera-video" autoplay playsinline></video>
+                        <canvas id="canvas"></canvas>
+                    </div>
+                    
+                    <div class="student-card" id="studentInfo" style="display: none; margin-top: 15px;">
+                        <h4 style="text-align: center; margin-bottom: 15px; color: #374151; font-size: 14px;">👨‍🎓 Информация об ученике</h4>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                            <div style="padding: 10px; background: white; border-radius: 6px; border: 1px solid #e2e8f0;">
+                                <div style="font-size: 10px; color: #6b7280; margin-bottom: 2px; text-transform: uppercase; font-weight: 600;">Имя Фамилия</div>
+                                <div style="font-weight: 700; color: #1f2937; font-size: 14px;" id="studentName">-</div>
+                            </div>
+                            <div style="padding: 10px; background: white; border-radius: 6px; border: 1px solid #e2e8f0;">
+                                <div style="font-size: 10px; color: #6b7280; margin-bottom: 2px; text-transform: uppercase; font-weight: 600;">Класс</div>
+                                <div style="font-weight: 700; color: #1f2937; font-size: 14px;" id="studentClass">-</div>
+                            </div>
+                        </div>
+                        
+                        <div style="text-align: center; font-size: 24px; font-weight: bold; color: #059669; margin: 15px 0; padding: 12px; background: white; border-radius: 8px; border: 2px solid #10b981;" id="studentBalance">0 элек</div>
+                        
+                        <div style="margin: 15px 0;">
+                            <input type="number" id="amount" placeholder="0" min="1" value="100" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 18px; font-weight: bold; text-align: center; color: #1f2937;">
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+                            <button class="btn btn-success" onclick="addBalance()">💵 Пополнить</button>
+                            <button class="btn btn-danger" onclick="subtractBalance()">💰 Списать</button>
                         </div>
                     </div>
                     
-                    <div class="balance" id="studentBalance">0 элек</div>
-                    
-                    <div class="amount-input">
-                        <input type="number" id="amount" placeholder="0" min="1" value="100">
-                    </div>
-                    
-                    <div class="action-buttons">
-                        <button class="btn btn-success" onclick="addBalance()">💵 Пополнить</button>
-                        <button class="btn btn-danger" onclick="subtractBalance()">💰 Списать</button>
-                    </div>
+                    <div class="status-message" id="operationMessage"></div>
                 </div>
-                
-                <div class="status-message" id="operationMessage"></div>
             </div>
         </div>
         
@@ -603,23 +514,24 @@
             
             <div class="cash-content">
                 <div class="cart-section">
-                    <h4 style="text-align: center; margin-bottom: 15px; color: #374151;">🛒 Список товаров</h4>
+                    <h4 style="text-align: center; margin-bottom: 10px; color: #374151; font-size: 14px;">🛒 Список товаров</h4>
                     
                     <div class="cart-items" id="cartItems">
-                        <div style="text-align: center; padding: 40px; color: #6b7280;">
+                        <div style="text-align: center; padding: 30px; color: #6b7280; font-size: 13px;">
                             📦 Сканируйте товары<br>
                             <small>Наведите камеру на штрих-код</small>
                         </div>
                     </div>
                     
                     <div class="total-section">
-                        <h4 style="text-align: center;">Итого к оплате:</h4>
+                        <h4 style="text-align: center; font-size: 14px;">Итого к оплате:</h4>
                         <div class="total-amount" id="totalAmount">0 элек</div>
                     </div>
                     
                     <button class="payment-btn" onclick="startPayment()">💳 ОПЛАТИТЬ</button>
                 </div>
                 
+                <!-- Маленькая камера внизу -->
                 <div class="camera-section">
                     <div id="cash-camera-container">
                         <div class="scan-frame">
@@ -644,8 +556,8 @@
             </div>
             
             <div class="payment-content">
-                <div class="total-section" style="margin-bottom: 30px;">
-                    <h4 style="text-align: center;">Сумма к оплате:</h4>
+                <div class="total-section" style="margin-bottom: 20px;">
+                    <h4 style="text-align: center; font-size: 14px;">Сумма к оплате:</h4>
                     <div class="total-amount" id="paymentAmount">0 элек</div>
                 </div>
                 
@@ -670,75 +582,8 @@
             <div class="success-icon">✅</div>
             <div class="success-message">Оплата успешна!</div>
             <div class="success-details" id="successDetails"></div>
-            <div style="color: #6b7280; font-size: 14px;">
+            <div style="color: #6b7280; font-size: 12px;">
                 Автоматический возврат через <span id="countdown">4</span> сек...
-            </div>
-        </div>
-        
-        <!-- Админ панель -->
-        <div class="screen" id="adminScreen">
-            <div style="padding: 30px;">
-                <button class="btn back-btn" onclick="showScreen('mainScreen')">← Назад</button>
-                <h3 style="text-align: center; margin-bottom: 20px; color: #374151;">⚙️ Панель администратора</h3>
-                
-                <div class="tab-buttons">
-                    <button class="tab-btn active" onclick="switchTab('studentsTab')">👥 Ученики</button>
-                    <button class="tab-btn" onclick="switchTab('productsTab')">📦 Товары</button>
-                </div>
-                
-                <!-- Вкладка учеников -->
-                <div class="tab-content active" id="studentsTab">
-                    <div class="admin-panel">
-                        <h4>👥 Управление учениками</h4>
-                        
-                        <div class="input-group">
-                            <label for="newStudentName">Имя и фамилия:</label>
-                            <input type="text" id="newStudentName" placeholder="Саидамир Асходжаев">
-                        </div>
-                        
-                        <div class="input-group">
-                            <label for="newStudentClass">Класс:</label>
-                            <input type="text" id="newStudentClass" placeholder="9-Д">
-                        </div>
-                        
-                        <div class="input-group">
-                            <label for="newStudentId">ID ученика (для QR):</label>
-                            <input type="text" id="newStudentId" placeholder="0001">
-                        </div>
-                        
-                        <button class="btn btn-success" onclick="addNewStudent()">➕ Добавить ученика</button>
-                        
-                        <div class="student-list" id="studentsList">
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Вкладка товаров -->
-                <div class="tab-content" id="productsTab">
-                    <div class="admin-panel">
-                        <h4>📦 Управление товарами</h4>
-                        
-                        <div class="input-group">
-                            <label for="newProductName">Название товара:</label>
-                            <input type="text" id="newProductName" placeholder="Сникерс">
-                        </div>
-                        
-                        <div class="input-group">
-                            <label for="newProductBarcode">Штрих-код:</label>
-                            <input type="text" id="newProductBarcode" placeholder="1234567890123">
-                        </div>
-                        
-                        <div class="input-group">
-                            <label for="newProductPrice">Цена (элек):</label>
-                            <input type="number" id="newProductPrice" placeholder="50" min="1">
-                        </div>
-                        
-                        <button class="btn btn-success" onclick="addNewProduct()">➕ Добавить товар</button>
-                        
-                        <div class="products-list" id="productsList">
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -771,7 +616,7 @@
                     '0004': { id: '0004', firstName: 'Тест3', lastName: '', class: '9-Д', balance: 400 },
                     '0005': { id: '0005', firstName: 'Тест4', lastName: '', class: '9-Д', balance: 600 }
                 };
-                saveStudents();
+                localStorage.setItem('sehriyoStudents', JSON.stringify(students));
             }
             
             if (Object.keys(products).length === 0) {
@@ -781,22 +626,14 @@
                     '1234567890125': { barcode: '1234567890125', name: 'Вода 0.5л', price: 40 },
                     '1234567890126': { barcode: '1234567890126', name: 'Шоколад', price: 60 }
                 };
-                saveProducts();
+                localStorage.setItem('sehriyoProducts', JSON.stringify(products));
             }
-        }
-
-        function saveStudents() {
-            localStorage.setItem('sehriyoStudents', JSON.stringify(students));
-        }
-
-        function saveProducts() {
-            localStorage.setItem('sehriyoProducts', JSON.stringify(products));
         }
 
         function showMessage(elementId, message, isError = false) {
             const element = document.getElementById(elementId);
             element.textContent = message;
-            element.className = `status-message ${isError ? 'error' : 'success'}`;
+            element.className = `status-message ${isError ? 'error-msg' : 'success-msg'}`;
             element.style.display = 'block';
             
             setTimeout(() => {
@@ -849,10 +686,9 @@
                 startCashCamera();
             } else if (screenId === 'paymentScreen') {
                 startPaymentCamera();
-                document.getElementById('paymentAmount').textContent = currentPurchase.total + ' элек';
-            } else if (screenId === 'adminScreen') {
-                renderStudentsList();
-                renderProductsList();
+                if (currentPurchase) {
+                    document.getElementById('paymentAmount').textContent = currentPurchase.total + ' элек';
+                }
             } else if (screenId === 'successScreen') {
                 startCountdown();
             }
@@ -889,7 +725,7 @@
             }, 1000);
         }
 
-        // Камера для главного экрана (QR) - ЗАДНЯЯ
+        // Камеры
         async function startMainCamera() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
@@ -910,7 +746,6 @@
             }
         }
 
-        // Камера для кассы (штрих-коды) - ЗАДНЯЯ
         async function startCashCamera() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
@@ -930,7 +765,6 @@
             }
         }
 
-        // Камера для оплаты (QR) - ЗАДНЯЯ
         async function startPaymentCamera() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
@@ -991,7 +825,7 @@
             }
         }
 
-        // Обработка QR на главном экране
+        // Обработка кодов
         function onQRScanned(code) {
             const student = students[code];
             if (student) {
@@ -1004,13 +838,11 @@
             setTimeout(() => { isProcessing = false; }, 1000);
         }
 
-        // Обработка штрих-кодов в кассе
         function onBarcodeScanned(code) {
             addProductToCart(code);
             setTimeout(() => { isProcessing = false; }, 1000);
         }
 
-        // Обработка QR при оплате
         function onPaymentQRScanned(code) {
             const student = students[code];
             if (student && currentPurchase) {
@@ -1042,7 +874,7 @@
             }
 
             currentStudent.balance += amount;
-            saveStudents();
+            localStorage.setItem('sehriyoStudents', JSON.stringify(students));
             displayStudentInfo(currentStudent);
             showMessage('operationMessage', `✅ Баланс пополнен на ${amount} элек`);
         }
@@ -1065,7 +897,7 @@
             }
 
             currentStudent.balance -= amount;
-            saveStudents();
+            localStorage.setItem('sehriyoStudents', JSON.stringify(students));
             displayStudentInfo(currentStudent);
             showMessage('operationMessage', `✅ Списано ${amount} элек`);
         }
@@ -1108,7 +940,7 @@
             const totalAmount = document.getElementById('totalAmount');
             
             if (cart.length === 0) {
-                cartItems.innerHTML = '<div style="text-align: center; padding: 40px; color: #6b7280;">📦 Сканируйте товары<br><small>Наведите камеру на штрих-код</small></div>';
+                cartItems.innerHTML = '<div style="text-align: center; padding: 30px; color: #6b7280; font-size: 13px;">📦 Сканируйте товары<br><small>Наведите камеру на штрих-код</small></div>';
                 totalAmount.textContent = '0 элек';
                 return;
             }
@@ -1132,7 +964,7 @@
                             <span class="quantity">${item.quantity}</span>
                             <button class="quantity-btn" onclick="updateQuantity('${item.barcode}', 1)">+</button>
                         </div>
-                        <button class="quantity-btn btn-danger" onclick="updateQuantity('${item.barcode}', -${item.quantity})" style="background: #ef4444; color: white;">🗑️</button>
+                        <button class="quantity-btn" onclick="updateQuantity('${item.barcode}', -${item.quantity})" style="background: #ef4444; color: white;">🗑️</button>
                     </div>
                 `;
                 cartItems.appendChild(itemElement);
@@ -1164,7 +996,7 @@
 
             const oldBalance = student.balance;
             student.balance -= purchase.total;
-            saveStudents();
+            localStorage.setItem('sehriyoStudents', JSON.stringify(students));
             
             // Показываем успешную оплату
             const receipt = purchase.items.map(item => 
@@ -1179,15 +1011,11 @@
             showScreen('successScreen');
         }
 
-        // Админка (остальные функции остаются без изменений)
-        // ... (функции админки из предыдущего кода)
-
         // Обработчики событий
         document.getElementById('password').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') checkPassword();
         });
-
-        document.getElementById('amount').addEventListener('keypress', function(e) {
+document.getElementById('amount').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') subtractBalance();
         });
 
