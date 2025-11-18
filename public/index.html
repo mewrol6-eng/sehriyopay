@@ -125,130 +125,6 @@
             background: #f59e0b;
         }
         
-        .student-info {
-            background: #f8fafc;
-            border-radius: 10px;
-            padding: 15px;
-            margin: 15px 0;
-            border: 2px solid #e2e8f0;
-        }
-        
-        .balance-display {
-            text-align: center;
-            font-size: 24px;
-            font-weight: bold;
-            color: #059669;
-            margin: 15px 0;
-            padding: 15px;
-            background: white;
-            border-radius: 10px;
-            border: 2px solid #10b981;
-        }
-        
-        .qr-scanner {
-            text-align: center;
-            padding: 20px;
-            background: #f8fafc;
-            border-radius: 10px;
-            margin: 20px 0;
-            border: 2px dashed #4f46e5;
-            position: relative;
-        }
-        
-        .camera-container {
-            width: 100%;
-            height: 250px;
-            background: #000;
-            border-radius: 10px;
-            overflow: hidden;
-            position: relative;
-            margin: 15px 0;
-        }
-        
-        .camera-video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .scan-frame {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 200px;
-            height: 200px;
-            border: 2px solid #10b981;
-            border-radius: 10px;
-            z-index: 10;
-            pointer-events: none;
-        }
-        
-        .scan-animation {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: #10b981;
-            animation: scan 2s infinite linear;
-            box-shadow: 0 0 10px #10b981;
-        }
-        
-        .barcode-scan-frame {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 250px;
-            height: 80px;
-            border: 2px solid #10b981;
-            border-radius: 5px;
-            z-index: 10;
-            pointer-events: none;
-        }
-        
-        .barcode-scan-animation {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: #10b981;
-            animation: scan 1.5s infinite linear;
-            box-shadow: 0 0 8px #10b981;
-        }
-        
-        @keyframes scan {
-            0% { top: 0; }
-            100% { top: 100%; }
-        }
-        
-        .camera-permission {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            text-align: center;
-            width: 100%;
-        }
-        
-        .small-camera-section {
-            background: #000;
-            height: 120px;
-            position: relative;
-            border-radius: 10px;
-            margin: 15px 0;
-            overflow: hidden;
-        }
-        
-        .small-camera-video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
         .list {
             max-height: 300px;
             overflow-y: auto;
@@ -317,14 +193,6 @@
             color: #4f46e5;
             text-align: center;
             margin: 10px 0;
-        }
-        
-        .password-screen {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            height: 100%;
-            padding: 30px;
         }
         
         .tab-buttons {
@@ -406,26 +274,52 @@
             object-fit: cover;
         }
         
-        #barcode-scanner-container canvas {
-            display: none;
+        .camera-permission {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            text-align: center;
+            width: 100%;
         }
         
-        .flashlight-btn {
+        .barcode-scan-frame {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(255,255,255,0.9);
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            cursor: pointer;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 250px;
+            height: 80px;
+            border: 2px solid #10b981;
+            border-radius: 5px;
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        .barcode-scan-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #10b981;
+            animation: scan 1.5s infinite linear;
+            box-shadow: 0 0 8px #10b981;
+        }
+        
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+        
+        .payment-info {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            border: 2px solid #e2e8f0;
+            text-align: center;
         }
         
         .exit-cash-btn {
@@ -441,103 +335,70 @@
             font-size: 12px;
             color: white;
         }
-        
-        .payment-info {
-            background: #f8fafc;
-            border-radius: 10px;
-            padding: 15px;
-            margin: 15px 0;
-            border: 2px solid #e2e8f0;
-            text-align: center;
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <div class="nav-buttons">
-                <button class="nav-btn" onclick="checkPasswordAndShowScreen('cashScreen')">🏪 Касса</button>
-                <button class="nav-btn" onclick="checkPasswordAndShowScreen('adminScreen')">⚙️ Админ</button>
+                <button class="nav-btn" onclick="showScreen('cashScreen')">🏪 Касса</button>
+                <button class="nav-btn" onclick="showScreen('adminScreen')">⚙️ Админ</button>
             </div>
             <h1>Sehriyo pay</h1>
         </div>
         
-        <!-- Экран пароля -->
-        <div class="screen active" id="passwordScreen">
-            <div class="password-screen">
-                <h3 style="text-align: center; margin-bottom: 30px; color: #374151;">🔒 Вход в систему</h3>
-                
-                <div class="input-group">
-                    <label>Пароль продавца:</label>
-                    <input type="password" id="sellerPassword" placeholder="Введите пароль">
-                </div>
-                
-                <button class="btn btn-success" onclick="checkSellerPassword()">🚪 Войти как продавец</button>
-                
-                <div style="margin-top: 20px; text-align: center;">
-                    <button class="btn btn-secondary" onclick="enterAsStudent()">👨‍🎓 Войти как ученик</button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Главный экран -->
-        <div class="screen" id="mainScreen">
-            <h3 style="text-align: center; margin-bottom: 20px; color: #374151;">📷 Сканирование QR-кода ученика</h3>
+        <!-- Касса -->
+        <div class="screen active" id="cashScreen">
+            <button class="exit-cash-btn" onclick="exitCash()">🚪 Выйти</button>
+            <h3 style="text-align: center; margin-bottom: 20px; color: #374151;">🏪 Касса самообслуживания</h3>
             
-            <div class="qr-scanner">
-                <button class="flashlight-btn" onclick="toggleFlashlight()">🔦</button>
-                <h4>Сканирование камерой</h4>
-                
-                <div class="camera-container">
-                    <div class="scan-frame">
-                        <div class="scan-animation"></div>
+            <!-- Сканер штрих-кодов -->
+            <div style="margin: 20px 0;">
+                <h4 style="text-align: center; margin-bottom: 10px;">📦 Сканирование штрих-кодов</h4>
+                <div id="barcode-scanner-container">
+                    <div class="barcode-scan-frame">
+                        <div class="barcode-scan-animation"></div>
                     </div>
-                    <div class="camera-permission" id="cameraPermission">
-                        <div style="font-size: 48px; margin-bottom: 10px;">📷</div>
-                        <p>Камера готова к сканированию</p>
-                        <p style="font-size: 12px; margin-top: 5px;">Наведите на QR-код ученика</p>
+                    <div class="camera-permission" id="cashCameraPermission">
+                        <div style="font-size: 24px; margin-bottom: 5px;">📷</div>
+                        <p style="font-size: 12px;">Камера для штрих-кодов</p>
                     </div>
-                    <video class="camera-video" id="cameraVideo" autoplay playsinline></video>
-                    <canvas id="canvas" style="display: none;"></canvas>
+                    <video id="cashCameraVideo" autoplay playsinline></video>
+                    <canvas id="cashCanvas" style="display: none;"></canvas>
                 </div>
-                
-                <p style="color: #6b7280; margin: 10px 0;">Или введите ID вручную</p>
-                
-                <input type="text" class="qr-input" id="manualStudentId" placeholder="0001" maxlength="4" onkeypress="handleManualInput(event)">
-                <button class="btn btn-success" onclick="findStudent()">🔍 Найти ученика</button>
+                <p style="text-align: center; color: #6b7280; font-size: 12px; margin-top: 5px;">
+                    Наведите на штрих-код товара
+                </p>
+                <div id="barcode-result" class="barcode-result" style="display: none;"></div>
             </div>
             
-            <div class="student-info" id="studentInfo" style="display: none;">
-                <h4 style="text-align: center; margin-bottom: 15px;">👨‍🎓 Информация об ученике</h4>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-                    <div style="padding: 10px; background: white; border-radius: 6px; border: 1px solid #e2e8f0;">
-                        <div style="font-size: 12px; color: #6b7280;">Имя Фамилия</div>
-                        <div style="font-weight: 700;" id="studentName">-</div>
-                    </div>
-                    <div style="padding: 10px; background: white; border-radius: 6px; border: 1px solid #e2e8f0;">
-                        <div style="font-size: 12px; color: #6b7280;">Класс</div>
-                        <div style="font-weight: 700;" id="studentClass">-</div>
-                    </div>
-                </div>
-                
-                <div class="balance-display" id="studentBalance">0 элек</div>
-                
-                <div class="input-group">
-                    <label>Сумма операции:</label>
-                    <input type="number" id="amount" value="100" min="1" style="text-align: center; font-size: 18px; font-weight: bold;">
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <button class="btn btn-success" onclick="addBalance()">💵 Пополнить</button>
-                    <button class="btn btn-danger" onclick="subtractBalance()">💰 Списать</button>
+            <div class="list" id="cartItems">
+                <div style="text-align: center; padding: 30px; color: #6b7280;">
+                    Корзина пуста<br>
+                    <small>Добавьте товары сканированием</small>
                 </div>
             </div>
+            
+            <div class="total-section">
+                <h4 style="text-align: center;">Итого к оплате:</h4>
+                <div class="total-amount" id="totalAmount">0 элек</div>
+            </div>
+            
+            <div class="payment-info">
+                <p style="color: #6b7280; font-size: 14px; margin-bottom: 10px;">
+                    💡 <strong>Фиксированная оплата</strong><br>
+                    Будет списано точная сумма из чека
+                </p>
+            </div>
+            
+            <button class="btn btn-success" style="background: #10b981; font-size: 18px; padding: 20px;" onclick="processPayment()">
+                💳 ОПЛАТИТЬ ПОКУПКУ
+            </button>
         </div>
         
         <!-- Админ панель -->
         <div class="screen" id="adminScreen">
-            <button class="btn btn-secondary" onclick="showScreen('mainScreen')">← Назад</button>
+            <button class="btn btn-secondary" onclick="showScreen('cashScreen')">← Назад в кассу</button>
             <h3 style="text-align: center; margin-bottom: 20px; color: #374151;">⚙️ Панель администратора</h3>
             
             <div class="tab-buttons">
@@ -624,81 +485,22 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Касса -->
-        <div class="screen" id="cashScreen">
-            <button class="exit-cash-btn" onclick="exitCash()">🚪 Выйти</button>
-            <button class="btn btn-secondary" onclick="showScreen('mainScreen')" style="margin-bottom: 10px;">← Назад к сканированию</button>
-            <h3 style="text-align: center; margin-bottom: 20px; color: #374151;">🏪 Касса самообслуживания</h3>
-            
-            <!-- Сканер штрих-кодов -->
-            <div style="margin: 20px 0;">
-                <h4 style="text-align: center; margin-bottom: 10px;">📦 Сканирование штрих-кодов</h4>
-                <div id="barcode-scanner-container">
-                    <div class="barcode-scan-frame">
-                        <div class="barcode-scan-animation"></div>
-                    </div>
-                    <div class="camera-permission" id="cashCameraPermission">
-                        <div style="font-size: 24px; margin-bottom: 5px;">📷</div>
-                        <p style="font-size: 12px;">Камера для штрих-кодов</p>
-                    </div>
-                    <video id="cashCameraVideo" autoplay playsinline></video>
-                    <canvas id="cashCanvas" style="display: none;"></canvas>
-                </div>
-                <p style="text-align: center; color: #6b7280; font-size: 12px; margin-top: 5px;">
-                    Наведите на штрих-код товара
-                </p>
-                <div id="barcode-result" class="barcode-result" style="display: none;"></div>
-            </div>
-            
-            <div class="list" id="cartItems">
-                <div style="text-align: center; padding: 30px; color: #6b7280;">
-                    Корзина пуста<br>
-                    <small>Добавьте товары сканированием</small>
-                </div>
-            </div>
-            
-            <div class="total-section">
-                <h4 style="text-align: center;">Итого к оплате:</h4>
-                <div class="total-amount" id="totalAmount">0 элек</div>
-            </div>
-            
-            <div class="payment-info">
-                <p style="color: #6b7280; font-size: 14px; margin-bottom: 10px;">
-                    💡 <strong>Фиксированная оплата</strong><br>
-                    Будет списано точная сумма из чека
-                </p>
-            </div>
-            
-            <button class="btn btn-success" style="background: #10b981; font-size: 18px; padding: 20px;" onclick="processPayment()">
-                💳 ОПЛАТИТЬ ПОКУПКУ
-            </button>
-        </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
     <script>
         // Пароли
-        const SELLER_PASSWORD = 'school123';
-        const CASH_PASSWORD = 'cash123';
         const EXIT_CASH_PASSWORD = 'exit123';
         
         // Базы данных
         let students = JSON.parse(localStorage.getItem('sehriyoStudents')) || {};
         let products = JSON.parse(localStorage.getItem('sehriyoProducts')) || {};
         let warehouse = JSON.parse(localStorage.getItem('sehriyoWarehouse')) || {};
-        let currentStudent = null;
         let cart = [];
-        let isSeller = false;
         
         // Камеры
-        let mainCameraStream = null;
-        let cashCameraStream = null;
         let isProcessing = false;
         let isBarcodeScannerActive = false;
-        let isFlashlightOn = false;
-        let flashlightTrack = null;
         
         // Инициализация данных
         function initializeData() {
@@ -739,6 +541,9 @@
             renderStudentsList();
             renderProductsList();
             renderWarehouseList();
+            
+            // Запускаем сканер при загрузке
+            startBarcodeScanner();
         }
         
         function saveStudents() {
@@ -753,79 +558,15 @@
             localStorage.setItem('sehriyoWarehouse', JSON.stringify(warehouse));
         }
         
-        // Система паролей
-        function checkSellerPassword() {
-            const password = document.getElementById('sellerPassword').value;
-            if (password === SELLER_PASSWORD) {
-                isSeller = true;
-                showScreen('mainScreen');
-                startMainCamera();
-            } else {
-                alert('❌ Неверный пароль!');
-            }
-        }
-        
-        function enterAsStudent() {
-            isSeller = false;
-            showScreen('mainScreen');
-            startMainCamera();
-        }
-        
-        function checkPasswordAndShowScreen(screenId) {
-            if (!isSeller) {
-                const password = prompt('Введите пароль:');
-                if (screenId === 'adminScreen' && password === SELLER_PASSWORD) {
-                    isSeller = true;
-                    showScreen(screenId);
-                } else if (screenId === 'cashScreen' && password === CASH_PASSWORD) {
-                    showScreen(screenId);
-                    startBarcodeScanner();
-                } else {
-                    alert('❌ Неверный пароль!');
-                    return;
-                }
-            } else {
-                if (screenId === 'cashScreen') {
-                    startBarcodeScanner();
-                }
-                showScreen(screenId);
-            }
-        }
-        
         // Выход из кассы с паролем
         function exitCash() {
             const password = prompt('Введите пароль для выхода из кассы:');
             if (password === EXIT_CASH_PASSWORD) {
-                showScreen('mainScreen');
+                if (confirm('Вы уверены, что хотите выйти из кассы?')) {
+                    window.close();
+                }
             } else {
                 alert('❌ Неверный пароль!');
-            }
-        }
-        
-        // Фонарик
-        async function toggleFlashlight() {
-            try {
-                if (!mainCameraStream) return;
-                
-                const track = mainCameraStream.getVideoTracks()[0];
-                if (!track) return;
-                
-                if (isFlashlightOn) {
-                    await track.applyConstraints({
-                        advanced: [{ torch: false }]
-                    });
-                    isFlashlightOn = false;
-                    event.target.textContent = '🔦';
-                } else {
-                    await track.applyConstraints({
-                        advanced: [{ torch: true }]
-                    });
-                    isFlashlightOn = true;
-                    event.target.textContent = '💡';
-                }
-            } catch (error) {
-                console.log('Фонарик не поддерживается:', error);
-                alert('❌ Фонарик не поддерживается на этом устройстве');
             }
         }
         
@@ -840,37 +581,6 @@
             
             event.target.classList.add('active');
             document.getElementById(tabId).classList.add('active');
-        }
-        
-        // Работа с камерами
-        async function startMainCamera() {
-            try {
-                if (mainCameraStream) {
-                    mainCameraStream.getTracks().forEach(track => track.stop());
-                }
-                
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { 
-                        facingMode: "environment",
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    } 
-                });
-                
-                const video = document.getElementById('cameraVideo');
-                video.srcObject = stream;
-                document.getElementById('cameraPermission').style.display = 'none';
-                mainCameraStream = stream;
-                
-                startQRScanning(video, 'canvas', handleQRScanned);
-                
-            } catch (error) {
-                console.log('Камера не доступна: ' + error);
-                document.getElementById('cameraPermission').innerHTML = `
-                    <div style="color: #ef4444;">❌ Камера недоступна</div>
-                    <p style="font-size: 12px; margin-top: 5px;">Используйте ручной ввод</p>
-                `;
-            }
         }
         
         // Сканер штрих-кодов с QuaggaJS
@@ -977,65 +687,14 @@
             }
         }
         
-        function startQRScanning(video, canvasId, callback) {
-            const canvas = document.getElementById(canvasId);
-            const context = canvas.getContext('2d');
-            
-            function scan() {
-                if (video.readyState === video.HAVE_ENOUGH_DATA && !isProcessing) {
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    
-                    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                    const code = jsQR(imageData.data, imageData.width, imageData.height);
-                    
-                    if (code) {
-                        isProcessing = true;
-                        callback(code.data);
-                        
-                        setTimeout(() => {
-                            isProcessing = false;
-                        }, 2000);
-                    }
-                }
-                requestAnimationFrame(scan);
-            }
-            scan();
-        }
-        
-        function handleQRScanned(code) {
-            console.log('QR отсканирован:', code);
-            if (/^\d{4}$/.test(code)) {
-                const student = students[code];
-                if (student) {
-                    currentStudent = student;
-                    showStudentInfo(student);
-                }
-            }
-        }
-        
-        function stopAllCameras() {
-            if (mainCameraStream) {
-                mainCameraStream.getTracks().forEach(track => track.stop());
-                mainCameraStream = null;
-            }
-            stopBarcodeScanner();
-            isFlashlightOn = false;
-        }
-        
         // Переключение экранов
         function showScreen(screenId) {
-            stopAllCameras();
-            
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.classList.remove('active');
             });
             document.getElementById(screenId).classList.add('active');
             
-            if (screenId === 'mainScreen') {
-                startMainCamera();
-            } else if (screenId === 'cashScreen') {
+            if (screenId === 'cashScreen') {
                 startBarcodeScanner();
             } else if (screenId === 'adminScreen') {
                 renderStudentsList();
@@ -1044,83 +703,8 @@
             }
         }
         
-        // Поиск ученика
-        function findStudent() {
-            const studentId = document.getElementById('manualStudentId').value.trim();
-            if (!studentId) {
-                alert('Введите ID ученика');
-                return;
-            }
-            
-            const student = students[studentId];
-            if (student) {
-                currentStudent = student;
-                showStudentInfo(student);
-            } else {
-                alert('Ученик с ID ' + studentId + ' не найден');
-            }
-        }
-        
-        function handleManualInput(event) {
-            if (event.key === 'Enter') {
-                findStudent();
-            }
-        }
-        
-        function showStudentInfo(student) {
-            document.getElementById('studentName').textContent = student.firstName + ' ' + student.lastName;
-            document.getElementById('studentClass').textContent = student.class;
-            document.getElementById('studentBalance').textContent = student.balance + ' элек';
-            document.getElementById('studentInfo').style.display = 'block';
-        }
-        
-        // Операции с балансом
-        function addBalance() {
-            if (!currentStudent) {
-                alert('Сначала найдите ученика');
-                return;
-            }
-            
-            if (!isSeller) {
-                alert('❌ Только продавец может пополнять баланс!');
-                return;
-            }
-            
-            const amount = parseInt(document.getElementById('amount').value);
-            if (amount > 0) {
-                currentStudent.balance += amount;
-                saveStudents();
-                showStudentInfo(currentStudent);
-                alert('✅ Баланс пополнен на ' + amount + ' элек!');
-            }
-        }
-        
-        function subtractBalance() {
-            if (!currentStudent) {
-                alert('Сначала найдите ученика');
-                return;
-            }
-            
-            const amount = parseInt(document.getElementById('amount').value);
-            if (amount > 0) {
-                if (currentStudent.balance >= amount) {
-                    currentStudent.balance -= amount;
-                    saveStudents();
-                    showStudentInfo(currentStudent);
-                    alert('✅ Списано ' + amount + ' элек!');
-                } else {
-                    alert('❌ Недостаточно средств!');
-                }
-            }
-        }
-        
         // Админка: Ученики
         function addNewStudent() {
-            if (!isSeller) {
-                alert('❌ Только продавец может добавлять учеников!');
-                return;
-            }
-            
             const name = document.getElementById('newStudentName').value.trim();
             const studentClass = document.getElementById('newStudentClass').value.trim();
             const id = document.getElementById('newStudentId').value.trim();
@@ -1175,11 +759,6 @@
         }
         
         function deleteStudent(id) {
-            if (!isSeller) {
-                alert('❌ Только продавец может удалять учеников!');
-                return;
-            }
-            
             if (confirm('Удалить ученика ' + students[id].firstName + ' ' + students[id].lastName + '?')) {
                 delete students[id];
                 saveStudents();
@@ -1189,11 +768,6 @@
         
         // Админка: Товары
         function addNewProduct() {
-            if (!isSeller) {
-                alert('❌ Только продавец может добавлять товары!');
-                return;
-            }
-            
             const name = document.getElementById('newProductName').value.trim();
             const barcode = document.getElementById('newProductBarcode').value.trim();
             const price = parseInt(document.getElementById('newProductPrice').value);
@@ -1255,11 +829,6 @@
         }
         
         function deleteProduct(barcode) {
-            if (!isSeller) {
-                alert('❌ Только продавец может удалять товары!');
-                return;
-            }
-            
             if (confirm('Удалить товар ' + products[barcode].name + '?')) {
                 delete products[barcode];
                 delete warehouse[barcode];
@@ -1299,11 +868,6 @@
         }
         
         function addStock(barcode) {
-            if (!isSeller) {
-                alert('❌ Только продавец может управлять складом!');
-                return;
-            }
-            
             const amount = parseInt(prompt('Сколько товара добавить на склад?', '10'));
             if (amount && amount > 0) {
                 warehouse[barcode].stock += amount;
@@ -1314,11 +878,6 @@
         }
         
         function setStock(barcode) {
-            if (!isSeller) {
-                alert('❌ Только продавец может управлять складом!');
-                return;
-            }
-            
             const newStock = parseInt(prompt('Установить количество товара на складе:', warehouse[barcode].stock));
             if (newStock !== null && newStock >= 0) {
                 warehouse[barcode].stock = newStock;
@@ -1329,11 +888,6 @@
         }
         
         function updateAllStock() {
-            if (!isSeller) {
-                alert('❌ Только продавец может управлять складом!');
-                return;
-            }
-            
             alert('✅ Все остатки обновлены!');
         }
         
@@ -1449,20 +1003,35 @@
                 }
             }
             
-            // Переходим к сканированию QR-кода ученика для оплаты
-            alert(`💳 Переход к оплате\nСумма: ${total} элек\n\nОтсканируйте QR-код ученика`);
+            // Показываем чек
+            let receipt = `🧾 ЧЕК ПОКУПКИ\n\n`;
+            cart.forEach(item => {
+                receipt += `${item.name} - ${item.quantity} × ${item.price} элек = ${item.quantity * item.price} элек\n`;
+            });
+            receipt += `\n💰 ИТОГО: ${total} элек\n\n`;
+            receipt += `✅ ОПЛАЧЕНО`;
             
-            // Очищаем корзину и переходим к сканированию
+            alert(receipt);
+            
+            // Обновляем склад после успешной оплаты
+            cart.forEach(item => {
+                if (warehouse[item.barcode]) {
+                    warehouse[item.barcode].stock -= item.quantity;
+                    warehouse[item.barcode].sold += item.quantity;
+                }
+            });
+            saveWarehouse();
+            
+            // Очищаем корзину
             cart = [];
             renderCart();
-            showScreen('mainScreen');
         }
         
         // Инициализация при загрузке
         initializeData();
         
-        // Остановка камер при закрытии
-        window.addEventListener('beforeunload', stopAllCameras);
+        // Остановка сканера при закрытии
+        window.addEventListener('beforeunload', stopBarcodeScanner);
     </script>
 </body>
 </html>
