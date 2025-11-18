@@ -152,6 +152,7 @@
             border-radius: 10px;
             margin: 20px 0;
             border: 2px dashed #4f46e5;
+            position: relative;
         }
         
         .camera-container {
@@ -408,6 +409,47 @@
         #barcode-scanner-container canvas {
             display: none;
         }
+        
+        .flashlight-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.9);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        
+        .exit-cash-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(239, 68, 68, 0.9);
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            z-index: 100;
+            font-size: 12px;
+            color: white;
+        }
+        
+        .payment-info {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            border: 2px solid #e2e8f0;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -443,6 +485,7 @@
             <h3 style="text-align: center; margin-bottom: 20px; color: #374151;">📷 Сканирование QR-кода ученика</h3>
             
             <div class="qr-scanner">
+                <button class="flashlight-btn" onclick="toggleFlashlight()">🔦</button>
                 <h4>Сканирование камерой</h4>
                 
                 <div class="camera-container">
@@ -584,7 +627,8 @@
         
         <!-- Касса -->
         <div class="screen" id="cashScreen">
-            <button class="btn btn-secondary" onclick="showScreen('mainScreen')">← Назад</button>
+            <button class="exit-cash-btn" onclick="exitCash()">🚪 Выйти</button>
+            <button class="btn btn-secondary" onclick="showScreen('mainScreen')" style="margin-bottom: 10px;">← Назад к сканированию</button>
             <h3 style="text-align: center; margin-bottom: 20px; color: #374151;">🏪 Касса самообслуживания</h3>
             
             <!-- Сканер штрих-кодов -->
@@ -619,6 +663,13 @@
                 <div class="total-amount" id="totalAmount">0 элек</div>
             </div>
             
+            <div class="payment-info">
+                <p style="color: #6b7280; font-size: 14px; margin-bottom: 10px;">
+                    💡 <strong>Фиксированная оплата</strong><br>
+                    Будет списано точная сумма из чека
+                </p>
+            </div>
+            
             <button class="btn btn-success" style="background: #10b981; font-size: 18px; padding: 20px;" onclick="processPayment()">
                 💳 ОПЛАТИТЬ ПОКУПКУ
             </button>
@@ -631,6 +682,7 @@
         // Пароли
         const SELLER_PASSWORD = 'school123';
         const CASH_PASSWORD = 'cash123';
+        const EXIT_CASH_PASSWORD = 'exit123';
         
         // Базы данных
         let students = JSON.parse(localStorage.getItem('sehriyoStudents')) || {};
@@ -645,6 +697,8 @@
         let cashCameraStream = null;
         let isProcessing = false;
         let isBarcodeScannerActive = false;
+        let isFlashlightOn = false;
+        let flashlightTrack = null;
         
         // Инициализация данных
         function initializeData() {
@@ -738,6 +792,43 @@
             }
         }
         
+        // Выход из кассы с паролем
+        function exitCash() {
+            const password = prompt('Введите пароль для выхода из кассы:');
+            if (password === EXIT_CASH_PASSWORD) {
+                showScreen('mainScreen');
+            } else {
+                alert('❌ Неверный пароль!');
+            }
+        }
+        
+        // Фонарик
+        async function toggleFlashlight() {
+            try {
+                if (!mainCameraStream) return;
+                
+                const track = mainCameraStream.getVideoTracks()[0];
+                if (!track) return;
+                
+                if (isFlashlightOn) {
+                    await track.applyConstraints({
+                        advanced: [{ torch: false }]
+                    });
+                    isFlashlightOn = false;
+                    event.target.textContent = '🔦';
+                } else {
+                    await track.applyConstraints({
+                        advanced: [{ torch: true }]
+                    });
+                    isFlashlightOn = true;
+                    event.target.textContent = '💡';
+                }
+            } catch (error) {
+                console.log('Фонарик не поддерживается:', error);
+                alert('❌ Фонарик не поддерживается на этом устройстве');
+            }
+        }
+        
         // Переключение вкладок
         function switchTab(tabId) {
             document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -759,7 +850,11 @@
                 }
                 
                 const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: "environment" } 
+                    video: { 
+                        facingMode: "environment",
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    } 
                 });
                 
                 const video = document.getElementById('cameraVideo');
@@ -788,13 +883,15 @@
                     type: "LiveStream",
                     target: document.querySelector('#barcode-scanner-container'),
                     constraints: {
-                        facingMode: "environment"
+                        facingMode: "environment",
+                        width: { min: 640, ideal: 1280, max: 1920 },
+                        height: { min: 480, ideal: 720, max: 1080 }
                     }
                 },
                 decoder: {
                     readers: [
                         "ean_reader",
-                        "ean_8_reader",
+                        "ean_8_reader", 
                         "code_128_reader",
                         "upc_reader",
                         "upc_e_reader"
@@ -809,7 +906,13 @@
                     console.log(err);
                     document.getElementById('cashCameraPermission').innerHTML = `
                         <div style="color: #ef4444;">❌ Ошибка сканера</div>
-                        <p style="font-size: 12px; margin-top: 5px;">${err.message}</p>
+                        <p style="font-size: 12px; margin-top: 5px;">Используйте ручной ввод штрих-кода</p>
+                        <input type="text" id="manualBarcodeInput" placeholder="Введите штрих-код" 
+                               style="padding: 8px; margin: 10px 0; width: 80%; border-radius: 5px; border: 1px solid #ccc;">
+                        <button onclick="manualBarcodeInput()" 
+                                style="padding: 8px 15px; background: #4f46e5; color: white; border: none; border-radius: 5px;">
+                            Добавить
+                        </button>
                     `;
                     return;
                 }
@@ -819,27 +922,52 @@
                 isBarcodeScannerActive = true;
             });
 
+            let lastScannedCode = '';
+            let scanTimeout = null;
+
             Quagga.onDetected(function(result) {
                 if (isProcessing) return;
                 
-                isProcessing = true;
                 const code = result.codeResult.code;
+                
+                // Защита от повторного сканирования того же кода
+                if (code === lastScannedCode) return;
+                
+                isProcessing = true;
+                lastScannedCode = code;
+                
                 console.log("Штрих-код обнаружен: ", code);
                 
                 // Показываем результат
                 const resultElement = document.getElementById('barcode-result');
-                resultElement.textContent = `📦 Найден штрих-код: ${code}`;
+                resultElement.textContent = `📦 Найден: ${code}`;
                 resultElement.style.display = 'block';
+                resultElement.style.background = '#f59e0b';
                 
                 // Добавляем товар в корзину
                 addToCart(code);
                 
-                // Скрываем результат через 2 секунды
+                // Сбрасываем защиту через 2 секунды
                 setTimeout(() => {
-                    resultElement.style.display = 'none';
                     isProcessing = false;
+                    resultElement.style.display = 'none';
                 }, 2000);
+                
+                // Автосброс lastScannedCode через 5 секунд
+                clearTimeout(scanTimeout);
+                scanTimeout = setTimeout(() => {
+                    lastScannedCode = '';
+                }, 5000);
             });
+        }
+        
+        // Ручной ввод штрих-кода
+        function manualBarcodeInput() {
+            const barcode = document.getElementById('manualBarcodeInput').value.trim();
+            if (barcode) {
+                addToCart(barcode);
+                document.getElementById('manualBarcodeInput').value = '';
+            }
         }
         
         function stopBarcodeScanner() {
@@ -893,6 +1021,7 @@
                 mainCameraStream = null;
             }
             stopBarcodeScanner();
+            isFlashlightOn = false;
         }
         
         // Переключение экранов
@@ -1320,17 +1449,10 @@
                 }
             }
             
-            alert('✅ Оплачено ' + total + ' элек!\n\nПереход к сканированию QR-кода ученика...');
+            // Переходим к сканированию QR-кода ученика для оплаты
+            alert(`💳 Переход к оплате\nСумма: ${total} элек\n\nОтсканируйте QR-код ученика`);
             
-            // Обновляем склад после успешной оплаты
-            cart.forEach(item => {
-                if (warehouse[item.barcode]) {
-                    warehouse[item.barcode].stock -= item.quantity;
-                    warehouse[item.barcode].sold += item.quantity;
-                }
-            });
-            saveWarehouse();
-            
+            // Очищаем корзину и переходим к сканированию
             cart = [];
             renderCart();
             showScreen('mainScreen');
