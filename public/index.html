@@ -248,16 +248,6 @@
             object-fit: cover;
         }
         
-        .qr-input {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #4f46e5;
-            border-radius: 10px;
-            font-size: 18px;
-            text-align: center;
-            margin: 10px 0;
-        }
-        
         .list {
             max-height: 300px;
             overflow-y: auto;
@@ -569,15 +559,6 @@
             <button class="btn btn-secondary" onclick="showScreen('mainScreen')">← Назад</button>
             <h3 style="text-align: center; margin-bottom: 20px; color: #374151;">🏪 Касса самообслуживания</h3>
             
-            <div class="qr-scanner">
-                <h4>Добавление товаров</h4>
-                
-                <p style="color: #6b7280; margin: 10px 0;">Введите штрих-код товара</p>
-                
-                <input type="text" class="qr-input" id="manualBarcode" placeholder="1234567890123" maxlength="13" onkeypress="handleBarcodeInput(event)">
-                <button class="btn btn-success" onclick="addProductToCart()">➕ Добавить товар</button>
-            </div>
-            
             <!-- Маленькая камера для штрих-кодов -->
             <div style="margin: 20px 0;">
                 <h4 style="text-align: center; margin-bottom: 10px;">📦 Сканирование штрих-кодов</h4>
@@ -600,7 +581,7 @@
             <div class="list" id="cartItems">
                 <div style="text-align: center; padding: 30px; color: #6b7280;">
                     Корзина пуста<br>
-                    <small>Добавьте товары</small>
+                    <small>Добавьте товары сканированием</small>
                 </div>
             </div>
             
@@ -787,7 +768,7 @@
                 console.log('Камера кассы не доступна: ' + error);
                 document.getElementById('cashCameraPermission').innerHTML = `
                     <div style="color: #ef4444;">❌ Камера недоступна</div>
-                    <p style="font-size: 12px; margin-top: 5px;">Используйте ручной ввод</p>
+                    <p style="font-size: 12px; margin-top: 5px;">Используйте сканирование штрих-кодов</p>
                 `;
             }
         }
@@ -1169,21 +1150,10 @@
                 return;
             }
             
-            // Можно добавить массовое обновление остатков
             alert('✅ Все остатки обновлены!');
         }
         
-        // Касса
-        function addProductToCart() {
-            const barcode = document.getElementById('manualBarcode').value.trim();
-            if (!barcode) {
-                alert('Введите штрих-код товара');
-                return;
-            }
-            
-            addToCart(barcode);
-        }
-        
+        // Касса - только сканирование
         function addToCart(barcode) {
             const product = products[barcode];
             if (product) {
@@ -1211,15 +1181,8 @@
                     });
                 }
                 renderCart();
-                document.getElementById('manualBarcode').value = '';
             } else {
                 alert('❌ Товар не найден');
-            }
-        }
-        
-        function handleBarcodeInput(event) {
-            if (event.key === 'Enter') {
-                addProductToCart();
             }
         }
         
@@ -1242,7 +1205,7 @@
                 cartItems.innerHTML = `
                     <div style="text-align: center; padding: 30px; color: #6b7280;">
                         Корзина пуста<br>
-                        <small>Добавьте товары</small>
+                        <small>Добавьте товары сканированием</small>
                     </div>
                 `;
                 totalAmount.textContent = '0 элек';
