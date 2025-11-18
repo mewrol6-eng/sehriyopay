@@ -18,6 +18,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 20px;
         }
         
         .container {
@@ -25,9 +26,11 @@
             width: 100%;
             max-width: 400px;
             height: 100vh;
+            max-height: 800px;
             position: relative;
             overflow: hidden;
             box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            border-radius: 15px;
         }
         
         .header {
@@ -187,6 +190,30 @@
             box-shadow: 0 0 10px #10b981;
         }
         
+        .barcode-scan-frame {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 250px;
+            height: 80px;
+            border: 2px solid #10b981;
+            border-radius: 5px;
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        .barcode-scan-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #10b981;
+            animation: scan 1.5s infinite linear;
+            box-shadow: 0 0 8px #10b981;
+        }
+        
         @keyframes scan {
             0% { top: 0; }
             100% { top: 100%; }
@@ -200,6 +227,21 @@
             color: white;
             text-align: center;
             width: 100%;
+        }
+        
+        .small-camera-section {
+            background: #000;
+            height: 120px;
+            position: relative;
+            border-radius: 10px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        
+        .small-camera-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         
         .qr-input {
@@ -289,6 +331,25 @@
             height: 100%;
             padding: 30px;
         }
+        
+        .demo-barcodes {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .demo-barcode-item {
+            padding: 5px 0;
+            font-size: 14px;
+            color: #374151;
+        }
+        
+        .barcode-scanner-active {
+            border: 3px solid #10b981;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -311,7 +372,7 @@
                     <input type="password" id="sellerPassword" placeholder="Введите пароль">
                 </div>
                 
-                <button class="btn btn-success" onclick="checkSellerPassword()">🚪 Войти</button>
+                <button class="btn btn-success" onclick="checkSellerPassword()">🚪 Войти как продавец</button>
                 
                 <div style="margin-top: 20px; text-align: center;">
                     <button class="btn btn-secondary" onclick="enterAsStudent()">👨‍🎓 Войти как ученик</button>
@@ -415,25 +476,40 @@
             <h3 style="text-align: center; margin-bottom: 20px; color: #374151;">🏪 Касса самообслуживания</h3>
             
             <div class="qr-scanner">
-                <h4>Сканирование товаров</h4>
+                <h4>Добавление товаров</h4>
                 
-                <div class="camera-container">
-                    <div class="scan-frame" style="width: 280px; height: 80px;">
-                        <div class="scan-animation"></div>
-                    </div>
-                    <div class="camera-permission" id="cashCameraPermission">
-                        <div style="font-size: 48px; margin-bottom: 10px;">📦</div>
-                        <p>Камера готова к сканированию</p>
-                        <p style="font-size: 12px; margin-top: 5px;">Наведите на штрих-код товара</p>
-                    </div>
-                    <video class="camera-video" id="cashCameraVideo" autoplay playsinline></video>
-                    <canvas id="cashCanvas" style="display: none;"></canvas>
+                <div class="demo-barcodes">
+                    <h5 style="margin-bottom: 10px;">📋 Демо штрих-коды:</h5>
+                    <div class="demo-barcode-item">1234567890123 - Сникерс (50 элек)</div>
+                    <div class="demo-barcode-item">1234567890124 - Кола 0.5л (80 элек)</div>
+                    <div class="demo-barcode-item">1234567890125 - Вода 0.5л (40 элек)</div>
+                    <div class="demo-barcode-item">1234567890126 - Шоколад (60 элек)</div>
                 </div>
                 
-                <p style="color: #6b7280; margin: 10px 0;">Или введите штрих-код вручную</p>
+                <p style="color: #6b7280; margin: 10px 0;">Введите штрих-код вручную</p>
                 
                 <input type="text" class="qr-input" id="manualBarcode" placeholder="1234567890123" maxlength="13" onkeypress="handleBarcodeInput(event)">
                 <button class="btn btn-success" onclick="addProductToCart()">➕ Добавить товар</button>
+            </div>
+            
+            <!-- Маленькая камера для штрих-кодов -->
+            <div style="margin: 20px 0;">
+                <h4 style="text-align: center; margin-bottom: 10px;">📦 Сканирование штрих-кодов</h4>
+                <div class="small-camera-section" id="barcodeScanner">
+                    <div class="barcode-scan-frame">
+                        <div class="barcode-scan-animation"></div>
+                    </div>
+                    <div class="camera-permission" id="cashCameraPermission">
+                        <div style="font-size: 24px; margin-bottom: 5px;">📷</div>
+                        <p style="font-size: 12px;">Камера для штрих-кодов</p>
+                        <p style="font-size: 10px; color: #10b981;">Нажмите ПРОБЕЛ для демо-сканирования</p>
+                    </div>
+                    <video class="small-camera-video" id="cashCameraVideo" autoplay playsinline></video>
+                    <canvas id="cashCanvas" style="display: none;"></canvas>
+                </div>
+                <p style="text-align: center; color: #6b7280; font-size: 12px; margin-top: 5px;">
+                    Наведите на штрих-код товара или используйте ПРОБЕЛ для демо
+                </p>
             </div>
             
             <div class="list" id="cartItems">
@@ -471,6 +547,7 @@
         let mainCameraStream = null;
         let cashCameraStream = null;
         let isProcessing = false;
+        let barcodeScanningActive = false;
         
         // Инициализация данных
         function initializeData() {
@@ -490,7 +567,9 @@
                     '1234567890123': { barcode: '1234567890123', name: 'Сникерс', price: 50 },
                     '1234567890124': { barcode: '1234567890124', name: 'Кола 0.5л', price: 80 },
                     '1234567890125': { barcode: '1234567890125', name: 'Вода 0.5л', price: 40 },
-                    '1234567890126': { barcode: '1234567890126', name: 'Шоколад', price: 60 }
+                    '1234567890126': { barcode: '1234567890126', name: 'Шоколад', price: 60 },
+                    '1234567890127': { barcode: '1234567890127', name: 'Чипсы', price: 70 },
+                    '1234567890128': { barcode: '1234567890128', name: 'Сок', price: 55 }
                 };
                 saveProducts();
             }
@@ -588,13 +667,14 @@
                 document.getElementById('cashCameraPermission').style.display = 'none';
                 cashCameraStream = stream;
                 
-                startQRScanning(video, 'cashCanvas', handleBarcodeScanned);
+                // Запускаем "сканирование" штрих-кодов
+                startBarcodeDetection();
                 
             } catch (error) {
                 console.log('Камера кассы не доступна: ' + error);
                 document.getElementById('cashCameraPermission').innerHTML = `
                     <div style="color: #ef4444;">❌ Камера недоступна</div>
-                    <p style="font-size: 12px; margin-top: 5px;">Используйте ручной ввод</p>
+                    <p style="font-size: 12px; margin-top: 5px;">Используйте ручной ввод или ПРОБЕЛ для демо</p>
                 `;
             }
         }
@@ -616,7 +696,6 @@
                         isProcessing = true;
                         callback(code.data);
                         
-                        // Разблокируем через 2 секунды
                         setTimeout(() => {
                             isProcessing = false;
                         }, 2000);
@@ -625,6 +704,13 @@
                 requestAnimationFrame(scan);
             }
             scan();
+        }
+        
+        function startBarcodeDetection() {
+            // В реальном приложении здесь будет Quagga или другой сканер штрих-кодов
+            // Для демо просто показываем активное состояние
+            barcodeScanningActive = true;
+            document.getElementById('barcodeScanner').classList.add('barcode-scanner-active');
         }
         
         function handleQRScanned(code) {
@@ -638,13 +724,6 @@
             }
         }
         
-        function handleBarcodeScanned(code) {
-            console.log('Штрих-код отсканирован:', code);
-            if (products[code]) {
-                addToCart(code);
-            }
-        }
-        
         function stopAllCameras() {
             if (mainCameraStream) {
                 mainCameraStream.getTracks().forEach(track => track.stop());
@@ -654,6 +733,8 @@
                 cashCameraStream.getTracks().forEach(track => track.stop());
                 cashCameraStream = null;
             }
+            barcodeScanningActive = false;
+            document.getElementById('barcodeScanner').classList.remove('barcode-scanner-active');
         }
         
         // Переключение экранов
@@ -667,6 +748,8 @@
             
             if (screenId === 'mainScreen') {
                 startMainCamera();
+            } else if (screenId === 'cashScreen') {
+                startCashCamera();
             }
         }
         
@@ -910,6 +993,14 @@
                 }
                 renderCart();
                 document.getElementById('manualBarcode').value = '';
+                
+                // Анимация успешного сканирования
+                if (barcodeScanningActive) {
+                    document.getElementById('barcodeScanner').style.borderColor = '#10b981';
+                    setTimeout(() => {
+                        document.getElementById('barcodeScanner').style.borderColor = '';
+                    }, 500);
+                }
             } else {
                 alert('❌ Товар не найден');
             }
@@ -992,6 +1083,24 @@
         
         // Остановка камер при закрытии
         window.addEventListener('beforeunload', stopAllCameras);
+        
+        // Демо-режим для штрих-кодов (нажатие пробела добавляет случайный товар)
+        document.addEventListener('keydown', function(e) {
+            if (e.code === 'Space' && document.getElementById('cashScreen').classList.contains('active')) {
+                e.preventDefault();
+                const barcodes = Object.keys(products);
+                if (barcodes.length > 0) {
+                    const randomBarcode = barcodes[Math.floor(Math.random() * barcodes.length)];
+                    addToCart(randomBarcode);
+                    
+                    // Анимация сканирования
+                    document.getElementById('barcodeScanner').classList.add('barcode-scanner-active');
+                    setTimeout(() => {
+                        document.getElementById('barcodeScanner').classList.remove('barcode-scanner-active');
+                    }, 300);
+                }
+            }
+        });
     </script>
 </body>
 </html>
