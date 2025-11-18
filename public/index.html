@@ -50,10 +50,10 @@
             background: rgba(255,255,255,0.2);
             border: none;
             color: white;
-            padding: 6px 10px;
+            padding: 8px 12px;
             border-radius: 15px;
             cursor: pointer;
-            font-size: 10px;
+            font-size: 12px;
             z-index: 1001;
         }
         
@@ -64,10 +64,10 @@
             background: rgba(255,255,255,0.2);
             border: none;
             color: white;
-            padding: 6px 10px;
+            padding: 8px 12px;
             border-radius: 15px;
             cursor: pointer;
-            font-size: 10px;
+            font-size: 12px;
             z-index: 1001;
         }
         
@@ -78,10 +78,10 @@
             background: rgba(255,255,255,0.2);
             border: none;
             color: white;
-            padding: 5px 8px;
+            padding: 6px 10px;
             border-radius: 12px;
             cursor: pointer;
-            font-size: 9px;
+            font-size: 11px;
             z-index: 100;
         }
         
@@ -96,7 +96,7 @@
             display: block;
         }
         
-        /* Касса - на весь экран */
+        /* Касса */
         .cash-screen {
             background: white;
             height: calc(100vh - 70px);
@@ -160,6 +160,11 @@
             padding: 10px;
             color: white;
             font-size: 12px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
         }
         
         .camera-permission h3 {
@@ -284,7 +289,7 @@
             margin: 8px;
         }
         
-        /* Экран оплаты - КВАДРАТНАЯ камера */
+        /* Экран оплаты */
         .payment-screen {
             background: white;
             height: calc(100vh - 70px);
@@ -496,6 +501,34 @@
             font-size: 11px;
         }
         
+        /* Главный экран */
+        .main-camera-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+        
+        #camera-container {
+            width: 300px;
+            height: 300px;
+            border: 2px solid #4f46e5;
+            border-radius: 15px;
+            background: #000;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        #camera-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
         /* Остальные стили */
         .input-group {
             margin-bottom: 15px;
@@ -575,33 +608,6 @@
         
         #canvas, #cash-canvas, #payment-canvas {
             display: none;
-        }
-        
-        /* Главный экран с камерой */
-        .main-camera-container {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 15px;
-        }
-        
-        #camera-container {
-            width: 300px;
-            height: 300px;
-            border: 2px solid #4f46e5;
-            border-radius: 15px;
-            background: #000;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        #camera-video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
         }
     </style>
 </head>
@@ -854,6 +860,7 @@
         let cashStream = null;
         let paymentStream = null;
         let isProcessing = false;
+        let scanInterval = null;
 
         // Инициализация данных
         function initializeDemoData() {
@@ -928,7 +935,6 @@
                 initializeDemoData();
                 setTimeout(() => {
                     showScreen('mainScreen');
-                    startMainCamera();
                 }, 1000);
             } else {
                 showMessage('passwordMessage', '❌ Неверный пароль!', true);
@@ -936,12 +942,17 @@
         }
 
         function showScreen(screenId) {
+            console.log('Переключаем на экран:', screenId);
+            
             // Останавливаем все камеры
             stopAllCameras();
             
+            // Скрываем все экраны
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.classList.remove('active');
             });
+            
+            // Показываем нужный экран
             document.getElementById(screenId).classList.add('active');
             
             // Показываем кнопки только на главном экране
@@ -954,22 +965,24 @@
             }
             
             // Запускаем нужную камеру
-            if (screenId === 'mainScreen') {
-                startMainCamera();
-            } else if (screenId === 'cashScreen') {
-                startCashCamera();
-            } else if (screenId === 'paymentScreen') {
-                startPaymentCamera();
-                if (currentPurchase) {
-                    document.getElementById('paymentAmount').textContent = currentPurchase.total + ' элек';
+            setTimeout(() => {
+                if (screenId === 'mainScreen') {
+                    startMainCamera();
+                } else if (screenId === 'cashScreen') {
+                    startCashCamera();
+                } else if (screenId === 'paymentScreen') {
+                    startPaymentCamera();
+                    if (currentPurchase) {
+                        document.getElementById('paymentAmount').textContent = currentPurchase.total + ' элек';
+                    }
+                } else if (screenId === 'successScreen') {
+                    startCountdown();
+                } else if (screenId === 'adminScreen') {
+                    renderStudentsList();
+                    renderProductsList();
+                    renderWarehouseList();
                 }
-            } else if (screenId === 'successScreen') {
-                startCountdown();
-            } else if (screenId === 'adminScreen') {
-                renderStudentsList();
-                renderProductsList();
-                renderWarehouseList();
-            }
+            }, 100);
         }
 
         // Переключение вкладок в админке
@@ -1015,11 +1028,19 @@
             }, 1000);
         }
 
-        // Камеры
+        // Камеры - ПЕРЕПИСАННЫЙ КОД
         async function startMainCamera() {
             try {
+                if (mainStream) {
+                    mainStream.getTracks().forEach(track => track.stop());
+                }
+                
                 const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: "environment" }
+                    video: { 
+                        facingMode: "environment",
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
                 });
                 
                 const video = document.getElementById('camera-video');
@@ -1028,18 +1049,28 @@
                 document.getElementById('cameraPermission').style.display = 'none';
                 
                 mainStream = stream;
+                
+                // Запускаем сканирование
                 startQRScanning(video, 'canvas', onQRScanned);
                 
             } catch (error) {
                 console.error('Ошибка камеры:', error);
-                showMessage('operationMessage', '❌ Ошибка камеры', true);
+                showMessage('operationMessage', '❌ Ошибка доступа к камере', true);
             }
         }
 
         async function startCashCamera() {
             try {
+                if (cashStream) {
+                    cashStream.getTracks().forEach(track => track.stop());
+                }
+                
                 const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: "environment" }
+                    video: { 
+                        facingMode: "environment",
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
                 });
                 
                 const video = document.getElementById('cash-camera-video');
@@ -1051,14 +1082,22 @@
                 startQRScanning(video, 'cash-canvas', onBarcodeScanned);
                 
             } catch (error) {
-                console.error('Ошибка камеры:', error);
+                console.error('Ошибка камеры кассы:', error);
             }
         }
 
         async function startPaymentCamera() {
             try {
+                if (paymentStream) {
+                    paymentStream.getTracks().forEach(track => track.stop());
+                }
+                
                 const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: "environment" }
+                    video: { 
+                        facingMode: "environment",
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
                 });
                 
                 const video = document.getElementById('payment-camera-video');
@@ -1070,7 +1109,7 @@
                 startQRScanning(video, 'payment-canvas', onPaymentQRScanned);
                 
             } catch (error) {
-                console.error('Ошибка камеры:', error);
+                console.error('Ошибка камеры оплаты:', error);
             }
         }
 
@@ -1078,29 +1117,48 @@
             const canvas = document.getElementById(canvasId);
             const context = canvas.getContext('2d');
             
-            function scan() {
-                if (video.readyState === video.HAVE_ENOUGH_DATA && !isProcessing) {
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                    
-                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                    
-                    const qrCode = jsQR(imageData.data, imageData.width, imageData.height);
-                    
-                    if (qrCode) {
-                        isProcessing = true;
-                        callback(qrCode.data);
-                    }
-                }
-                
-                requestAnimationFrame(scan);
+            // Останавливаем предыдущее сканирование
+            if (scanInterval) {
+                clearInterval(scanInterval);
             }
             
-            video.addEventListener('loadeddata', scan);
+            function scan() {
+                if (video.readyState === video.HAVE_ENOUGH_DATA && !isProcessing) {
+                    try {
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        
+                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                        
+                        const qrCode = jsQR(imageData.data, imageData.width, imageData.height);
+                        
+                        if (qrCode) {
+                            isProcessing = true;
+                            console.log('Найден код:', qrCode.data);
+                            callback(qrCode.data);
+                            
+                            // Блокируем обработку на 2 секунды
+                            setTimeout(() => {
+                                isProcessing = false;
+                            }, 2000);
+                        }
+                    } catch (error) {
+                        console.error('Ошибка сканирования:', error);
+                    }
+                }
+            }
+            
+            // Запускаем сканирование каждые 100мс
+            scanInterval = setInterval(scan, 100);
         }
 
         function stopAllCameras() {
+            if (scanInterval) {
+                clearInterval(scanInterval);
+                scanInterval = null;
+            }
+            
             if (mainStream) {
                 mainStream.getTracks().forEach(track => track.stop());
                 mainStream = null;
@@ -1113,10 +1171,13 @@
                 paymentStream.getTracks().forEach(track => track.stop());
                 paymentStream = null;
             }
+            
+            isProcessing = false;
         }
 
         // Обработка кодов
         function onQRScanned(code) {
+            console.log('Сканирован QR:', code);
             const student = students[code];
             if (student) {
                 currentStudent = student;
@@ -1125,22 +1186,21 @@
             } else {
                 showMessage('operationMessage', '❌ Ученик не найден', true);
             }
-            setTimeout(() => { isProcessing = false; }, 1000);
         }
 
         function onBarcodeScanned(code) {
+            console.log('Сканирован штрих-код:', code);
             addProductToCart(code);
-            setTimeout(() => { isProcessing = false; }, 1000);
         }
 
         function onPaymentQRScanned(code) {
+            console.log('Сканирован QR для оплаты:', code);
             const student = students[code];
             if (student && currentPurchase) {
                 processPayment(student, currentPurchase);
             } else {
                 showMessage('paymentMessage', '❌ Ученик не найден', true);
             }
-            setTimeout(() => { isProcessing = false; }, 1000);
         }
 
         // Работа с учениками
@@ -1196,19 +1256,20 @@
         function addProductToCart(barcode) {
             const product = products[barcode];
             if (!product) {
+                showMessage('operationMessage', '❌ Товар не найден', true);
                 return;
             }
             
             const stockItem = warehouse[barcode];
             if (!stockItem || stockItem.stock <= 0) {
-                showMessage('cashMessage', `❌ ${product.name} закончился на складе`, true);
+                showMessage('operationMessage', `❌ ${product.name} закончился на складе`, true);
                 return;
             }
             
             const existingItem = cart.find(item => item.barcode === barcode);
             if (existingItem) {
                 if (existingItem.quantity >= stockItem.stock) {
-                    showMessage('cashMessage', `❌ Максимум ${stockItem.stock} шт. ${product.name}`, true);
+                    showMessage('operationMessage', `❌ Максимум ${stockItem.stock} шт. ${product.name}`, true);
                     return;
                 }
                 existingItem.quantity++;
@@ -1222,6 +1283,7 @@
             }
             
             renderCart();
+            showMessage('operationMessage', `✅ Добавлен: ${product.name}`);
         }
 
         function updateQuantity(barcode, change) {
@@ -1275,6 +1337,7 @@
 
         function startPayment() {
             if (cart.length === 0) {
+                showMessage('operationMessage', '❌ Корзина пуста', true);
                 return;
             }
 
@@ -1294,7 +1357,6 @@
                 return;
             }
 
-            const oldBalance = student.balance;
             student.balance -= purchase.total;
             saveStudents();
             
