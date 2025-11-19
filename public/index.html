@@ -272,11 +272,11 @@
             background: rgba(255, 255, 255, 0.05);
         }
         
-        /* Сканер - квадратный для нормального отображения */
+        /* Сканер - правильные пропорции */
         .scanner-container {
             position: relative;
             width: 100%;
-            height: 250px; /* Увеличил высоту для нормальных пропорций */
+            height: 250px;
             background: #000;
             border-radius: 12px;
             overflow: hidden;
@@ -289,8 +289,8 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 200px; /* Квадратная рамка */
-            height: 200px; /* Квадратная рамка */
+            width: 80%;
+            height: 60%;
             border: 2px solid var(--accent);
             border-radius: 8px;
             z-index: 10;
@@ -316,6 +316,12 @@
             color: var(--text-secondary);
             text-align: center;
             width: 100%;
+        }
+        
+        #cashCameraVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         
         @keyframes scan {
@@ -511,42 +517,6 @@
             -ms-user-select: none;
             user-select: none;
         }
-        
-        /* Улучшенный ручной ввод */
-        .manual-input-container {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 15px;
-            margin-top: 10px;
-        }
-        
-        .manual-input-row {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .manual-input-row input {
-            flex: 1;
-            padding: 14px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 16px;
-            color: var(--text-primary);
-            text-align: center;
-        }
-        
-        .manual-input-row button {
-            padding: 14px 20px;
-            background: var(--accent);
-            color: #000;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 14px;
-        }
     </style>
 </head>
 <body class="kiosk-mode">
@@ -589,13 +559,6 @@
                         <p style="font-size: 11px; margin-top: 3px;">Наведите камеру на штрих-код товара</p>
                     </div>
                     <video id="cashCameraVideo" autoplay playsinline></video>
-                </div>
-                
-                <div class="manual-input-container">
-                    <div class="manual-input-row">
-                        <input type="text" id="manualBarcodeInput" placeholder="Введите штрих-код вручную">
-                        <button onclick="manualBarcodeInput()">Добавить</button>
-                    </div>
                 </div>
                 
                 <div id="barcode-result" style="display: none; background: var(--accent); color: #000; padding: 12px; border-radius: 10px; margin-top: 10px; text-align: center; font-weight: 700;"></div>
@@ -879,9 +842,8 @@
                     target: document.querySelector('.scanner-container'),
                     constraints: {
                         facingMode: "environment",
-                        width: { min: 640, ideal: 800, max: 1280 },
-                        height: { min: 480, ideal: 600, max: 720 },
-                        aspectRatio: { min: 1, max: 2 }
+                        width: { min: 640, ideal: 1280, max: 1920 },
+                        height: { min: 480, ideal: 720, max: 1080 }
                     }
                 },
                 decoder: {
@@ -905,7 +867,7 @@
                         <div style="color: var(--text-secondary);">
                             <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 8px;"></i>
                             <p style="font-size: 14px;">Камера недоступна</p>
-                            <p style="font-size: 11px; margin-top: 3px;">Используйте ручной ввод штрих-кода</p>
+                            <p style="font-size: 11px; margin-top: 3px;">Перезагрузите страницу для повторной попытки</p>
                         </div>
                     `;
                     return;
@@ -953,25 +915,6 @@
             if (isBarcodeScannerActive) {
                 Quagga.stop();
                 isBarcodeScannerActive = false;
-            }
-        }
-        
-        // Ручной ввод штрих-кода
-        function manualBarcodeInput() {
-            const barcode = document.getElementById('manualBarcodeInput').value.trim();
-            if (barcode) {
-                addToCart(barcode);
-                document.getElementById('manualBarcodeInput').value = '';
-                
-                const resultElement = document.getElementById('barcode-result');
-                resultElement.textContent = `✅ Товар добавлен по коду: ${barcode}`;
-                resultElement.style.display = 'block';
-                resultElement.style.background = '#10b981';
-                resultElement.style.color = '#000';
-                
-                setTimeout(() => {
-                    resultElement.style.display = 'none';
-                }, 2000);
             }
         }
         
