@@ -16,12 +16,12 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         
         :root {
-            --bg-primary: #000000;
-            --bg-surface: #0a0a0a;
+            --bg-primary: #00005A;
+            --bg-surface: #000033;
             --text-primary: #ffffff;
             --text-secondary: #a0a0a0;
-            --accent: #fbbf24;
-            --border: #1f1f1f;
+            --accent: #4CC9F0;
+            --border: #1a1a5e;
             --success: #10b981;
             --danger: #ef4444;
         }
@@ -77,7 +77,7 @@
         .header {
             padding: 25px 20px 15px;
             border-bottom: 1px solid var(--border);
-            background: rgba(10, 10, 10, 0.95);
+            background: rgba(0, 0, 51, 0.95);
             backdrop-filter: blur(10px);
             position: relative;
         }
@@ -87,19 +87,6 @@
             align-items: center;
             gap: 15px;
             margin-bottom: 10px;
-        }
-        
-        .logo {
-            width: 40px;
-            height: 40px;
-            background: var(--accent);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 18px;
-            color: #000;
         }
         
         .title {
@@ -185,7 +172,7 @@
         .card-header i {
             font-size: 20px;
             color: var(--accent);
-            background: rgba(251, 191, 36, 0.1);
+            background: rgba(76, 201, 240, 0.1);
             width: 40px;
             height: 40px;
             display: flex;
@@ -227,7 +214,7 @@
         .input-group input:focus {
             outline: none;
             border-color: var(--accent);
-            background: rgba(251, 191, 36, 0.05);
+            background: rgba(76, 201, 240, 0.05);
         }
         
         /* Кнопки */
@@ -318,7 +305,7 @@
             width: 100%;
         }
         
-        #cashCameraVideo {
+        #cashCameraVideo, #qrCameraVideo {
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -535,7 +522,6 @@
             <button class="admin-access-btn" onclick="accessAdmin()" title="Админ-панель"></button>
             
             <div class="logo-container">
-                <div class="logo">S</div>
                 <h1 class="title">SEHRIYO PAY</h1>
             </div>
             <div class="author-tag">KIOSK MODE</div>
@@ -585,13 +571,46 @@
                 <p style="color: var(--text-secondary); font-size: 14px;">Фиксированная сумма из чека</p>
             </div>
             
-            <button class="btn btn-success" onclick="processPayment()">
+            <button class="btn btn-success" onclick="startQRPayment()">
                 <i class="fas fa-credit-card"></i> ОПЛАТИТЬ ПОКУПКУ
             </button>
             
             <button class="btn btn-secondary" onclick="clearCart()">
                 <i class="fas fa-trash"></i> ОЧИСТИТЬ КОРЗИНУ
             </button>
+        </div>
+        
+        <!-- Экран оплаты QR-кодом -->
+        <div class="screen" id="qrScreen">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-qrcode"></i>
+                    <h3>Оплата QR-кодом</h3>
+                </div>
+                
+                <div class="scanner-container">
+                    <div class="scanner-frame">
+                        <div class="scanner-animation"></div>
+                    </div>
+                    <div class="scanner-permission" id="qrCameraPermission">
+                        <i class="fas fa-camera" style="font-size: 24px; margin-bottom: 8px;"></i>
+                        <p style="font-size: 14px;">Сканирование QR-кода</p>
+                        <p style="font-size: 11px; margin-top: 3px;">Наведите камеру на QR-код ученика</p>
+                    </div>
+                    <video id="qrCameraVideo" autoplay playsinline></video>
+                </div>
+                
+                <div id="qr-result" style="display: none; background: var(--accent); color: #000; padding: 12px; border-radius: 10px; margin-top: 10px; text-align: center; font-weight: 700;"></div>
+                
+                <div class="total-section" style="margin-top: 20px;">
+                    <h3>Сумма к оплате</h3>
+                    <div class="total-amount" id="qrTotalAmount">0 элек</div>
+                </div>
+                
+                <button class="btn btn-secondary" onclick="showScreen('cashScreen')">
+                    <i class="fas fa-arrow-left"></i> НАЗАД К КОРЗИНЕ
+                </button>
+            </div>
         </div>
         
         <!-- Админ панель -->
@@ -737,6 +756,8 @@
         // Состояние системы
         let isProcessing = false;
         let isBarcodeScannerActive = false;
+        let isQRScannerActive = false;
+        let pendingPaymentTotal = 0;
         
         // Инициализация при загрузке
         document.addEventListener('DOMContentLoaded', function() {
@@ -750,6 +771,7 @@
             if (password === ADMIN_PASSWORD) {
                 showScreen('adminScreen');
                 stopBarcodeScanner();
+                stopQRScanner();
             } else if (password !== null) {
                 alert('❌ Неверный пароль!');
             }
@@ -814,8 +836,13 @@
             
             if (screenId === 'cashScreen') {
                 startBarcodeScanner();
+                stopQRScanner();
+            } else if (screenId === 'qrScreen') {
+                stopBarcodeScanner();
+                startQRScanner();
             } else {
                 stopBarcodeScanner();
+                stopQRScanner();
             }
         }
         
@@ -839,7 +866,7 @@
                 inputStream: {
                     name: "Live",
                     type: "LiveStream",
-                    target: document.querySelector('.scanner-container'),
+                    target: document.querySelector('#cashScreen .scanner-container'),
                     constraints: {
                         facingMode: "environment",
                         width: { min: 640, ideal: 1280, max: 1920 },
@@ -894,7 +921,7 @@
                 const resultElement = document.getElementById('barcode-result');
                 resultElement.textContent = `📦 Найден штрих-код: ${code}`;
                 resultElement.style.display = 'block';
-                resultElement.style.background = '#fbbf24';
+                resultElement.style.background = '#4CC9F0';
                 resultElement.style.color = '#000';
                 
                 addToCart(code);
@@ -916,6 +943,155 @@
                 Quagga.stop();
                 isBarcodeScannerActive = false;
             }
+        }
+        
+        // Сканер QR-кодов для оплаты
+        function startQRPayment() {
+            if (cart.length === 0) {
+                alert('❌ Корзина пуста!');
+                return;
+            }
+            
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            pendingPaymentTotal = total;
+            document.getElementById('qrTotalAmount').textContent = total + ' элек';
+            showScreen('qrScreen');
+        }
+        
+        function startQRScanner() {
+            if (isQRScannerActive) return;
+            
+            Quagga.init({
+                inputStream: {
+                    name: "Live",
+                    type: "LiveStream",
+                    target: document.querySelector('#qrScreen .scanner-container'),
+                    constraints: {
+                        facingMode: "environment",
+                        width: { min: 640, ideal: 1280, max: 1920 },
+                        height: { min: 480, ideal: 720, max: 1080 }
+                    }
+                },
+                decoder: {
+                    readers: [
+                        "code_128_reader" // Для QR-кодов учеников будем использовать Code128
+                    ]
+                },
+                locator: {
+                    patchSize: "medium",
+                    halfSample: true
+                },
+                frequency: 10
+            }, function(err) {
+                if (err) {
+                    console.log(err);
+                    document.getElementById('qrCameraPermission').innerHTML = `
+                        <div style="color: var(--text-secondary);">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 8px;"></i>
+                            <p style="font-size: 14px;">Камера недоступна</p>
+                            <p style="font-size: 11px; margin-top: 3px;">Перезагрузите страницу для повторной попытки</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                document.getElementById('qrCameraPermission').style.display = 'none';
+                Quagga.start();
+                isQRScannerActive = true;
+            });
+
+            let lastScannedQR = '';
+            let scanTimeout = null;
+
+            Quagga.onDetected(function(result) {
+                if (isProcessing) return;
+                
+                const code = result.codeResult.code;
+                
+                if (code === lastScannedQR) return;
+                
+                isProcessing = true;
+                lastScannedQR = code;
+                
+                const resultElement = document.getElementById('qr-result');
+                resultElement.textContent = `👤 Найден ID ученика: ${code}`;
+                resultElement.style.display = 'block';
+                resultElement.style.background = '#4CC9F0';
+                resultElement.style.color = '#000';
+                
+                processStudentPayment(code);
+                
+                setTimeout(() => {
+                    isProcessing = false;
+                    resultElement.style.display = 'none';
+                }, 3000);
+                
+                clearTimeout(scanTimeout);
+                scanTimeout = setTimeout(() => {
+                    lastScannedQR = '';
+                }, 5000);
+            });
+        }
+        
+        function stopQRScanner() {
+            if (isQRScannerActive) {
+                Quagga.stop();
+                isQRScannerActive = false;
+            }
+        }
+        
+        // Обработка оплаты учеником
+        function processStudentPayment(studentId) {
+            const student = students[studentId];
+            
+            if (!student) {
+                alert(`❌ Ученик с ID ${studentId} не найден!`);
+                return;
+            }
+            
+            if (student.balance < pendingPaymentTotal) {
+                alert(`❌ Недостаточно средств! Баланс: ${student.balance} элек, нужно: ${pendingPaymentTotal} элек`);
+                return;
+            }
+            
+            // Проверяем наличие товаров на складе
+            for (let item of cart) {
+                const stockItem = warehouse[item.barcode];
+                if (!stockItem || stockItem.stock < item.quantity) {
+                    alert(`❌ Недостаточно ${item.name} на складе!`);
+                    return;
+                }
+            }
+            
+            // Списание средств и обновление склада
+            student.balance -= pendingPaymentTotal;
+            
+            cart.forEach(item => {
+                if (warehouse[item.barcode]) {
+                    warehouse[item.barcode].stock -= item.quantity;
+                    warehouse[item.barcode].sold += item.quantity;
+                }
+            });
+            
+            saveStudents();
+            saveWarehouse();
+            
+            let receipt = `🧾 ЧЕК ПОКУПКИ\n\n`;
+            cart.forEach(item => {
+                receipt += `${item.name} - ${item.quantity} × ${item.price} элек = ${item.quantity * item.price} элек\n`;
+            });
+            receipt += `\n💰 ИТОГО: ${pendingPaymentTotal} элек\n`;
+            receipt += `👤 Ученик: ${student.firstName} ${student.lastName}\n`;
+            receipt += `📊 Остаток: ${student.balance} элек\n\n`;
+            receipt += `✅ ОПЛАЧЕНО`;
+            
+            alert(`✅ Оплата прошла успешно!\n\n${receipt}`);
+            
+            // Очищаем корзину и возвращаемся в кассу
+            cart = [];
+            pendingPaymentTotal = 0;
+            renderCart();
+            showScreen('cashScreen');
         }
         
         // Корзина товаров
@@ -1024,46 +1200,6 @@
             });
             
             totalAmount.textContent = total + ' элек';
-        }
-        
-        // Оплата покупки
-        function processPayment() {
-            if (cart.length === 0) {
-                alert('❌ Корзина пуста!');
-                return;
-            }
-            
-            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            
-            for (let item of cart) {
-                const stockItem = warehouse[item.barcode];
-                if (!stockItem || stockItem.stock < item.quantity) {
-                    alert(`❌ Недостаточно ${item.name} на складе!`);
-                    return;
-                }
-            }
-            
-            let receipt = `🧾 ЧЕК ПОКУПКИ\n\n`;
-            cart.forEach(item => {
-                receipt += `${item.name} - ${item.quantity} × ${item.price} элек = ${item.quantity * item.price} элек\n`;
-            });
-            receipt += `\n💰 ИТОГО: ${total} элек\n\n`;
-            receipt += `✅ ОПЛАЧЕНО`;
-            
-            if (confirm(`Подтвердите оплату на сумму ${total} элек?\n\n${receipt}`)) {
-                cart.forEach(item => {
-                    if (warehouse[item.barcode]) {
-                        warehouse[item.barcode].stock -= item.quantity;
-                        warehouse[item.barcode].sold += item.quantity;
-                    }
-                });
-                saveWarehouse();
-                
-                cart = [];
-                renderCart();
-                
-                alert(`✅ Оплата на сумму ${total} элек прошла успешно!\n\nСпасибо за покупку!`);
-            }
         }
         
         // Админка: Ученики
@@ -1256,7 +1392,7 @@
                             <span style="background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">
                                 <i class="fas fa-box"></i> ${item.stock} шт.
                             </span>
-                            <span style="background: rgba(251, 191, 36, 0.2); color: #fbbf24; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">
+                            <span style="background: rgba(76, 201, 240, 0.2); color: #4CC9F0; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">
                                 <i class="fas fa-chart-line"></i> Продано: ${item.sold} шт.
                             </span>
                         </div>
@@ -1265,7 +1401,7 @@
                         <button class="quantity-btn" style="background: #10b981; color: white; border-color: #10b981;" onclick="addStock('${item.barcode}')">
                             <i class="fas fa-plus"></i>
                         </button>
-                        <button class="quantity-btn" style="background: #fbbf24; color: black; border-color: #fbbf24;" onclick="setStock('${item.barcode}')">
+                        <button class="quantity-btn" style="background: #4CC9F0; color: black; border-color: #4CC9F0;" onclick="setStock('${item.barcode}')">
                             <i class="fas fa-edit"></i>
                         </button>
                     </div>
@@ -1299,7 +1435,10 @@
         }
         
         // Очистка при закрытии
-        window.addEventListener('beforeunload', stopBarcodeScanner);
+        window.addEventListener('beforeunload', function() {
+            stopBarcodeScanner();
+            stopQRScanner();
+        });
     </script>
 </body>
 </html>
