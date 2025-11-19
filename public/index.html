@@ -276,8 +276,8 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 80%;
-            height: 60%;
+            width: 200px;
+            height: 200px;
             border: 2px solid var(--accent);
             border-radius: 8px;
             z-index: 10;
@@ -524,7 +524,7 @@
             <div class="logo-container">
                 <h1 class="title">SEHRIYO PAY</h1>
             </div>
-            <div class="author-tag">KIOSK MODE</div>
+            <div class="author-tag">by Askhodjaev</div>
         </div>
         
         <!-- Экран кассы -->
@@ -598,6 +598,7 @@
                         <p style="font-size: 11px; margin-top: 3px;">Наведите камеру на QR-код ученика</p>
                     </div>
                     <video id="qrCameraVideo" autoplay playsinline></video>
+                    <canvas id="qrCanvas" style="display: none;"></canvas>
                 </div>
                 
                 <div id="qr-result" style="display: none; background: var(--accent); color: #000; padding: 12px; border-radius: 10px; margin-top: 10px; text-align: center; font-weight: 700;"></div>
@@ -743,6 +744,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
     <script>
         // Конфигурация
         const ADMIN_PASSWORD = 'admin123';
@@ -758,6 +760,8 @@
         let isBarcodeScannerActive = false;
         let isQRScannerActive = false;
         let pendingPaymentTotal = 0;
+        let qrStream = null;
+        let qrAnimationFrame = null;
         
         // Инициализация при загрузке
         document.addEventListener('DOMContentLoaded', function() {
@@ -961,82 +965,79 @@
         function startQRScanner() {
             if (isQRScannerActive) return;
             
-            Quagga.init({
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    target: document.querySelector('#qrScreen .scanner-container'),
-                    constraints: {
-                        facingMode: "environment",
-                        width: { min: 640, ideal: 1280, max: 1920 },
-                        height: { min: 480, ideal: 720, max: 1080 }
+            const video = document.getElementById('qrCameraVideo');
+            const canvas = document.getElementById('qrCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    facingMode: "environment",
+                    width: { min: 640, ideal: 1280, max: 1920 },
+                    height: { min: 480, ideal: 720, max: 1080 }
+                } 
+            }).then(function(stream) {
+                qrStream = stream;
+                video.srcObject = stream;
+                document.getElementById('qrCameraPermission').style.display = 'none';
+                isQRScannerActive = true;
+                
+                function tick() {
+                    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        
+                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                            inversionAttempts: "dontInvert",
+                        });
+                        
+                        if (code && !isProcessing) {
+                            isProcessing = true;
+                            const resultElement = document.getElementById('qr-result');
+                            resultElement.textContent = `👤 Найден QR-код: ${code.data}`;
+                            resultElement.style.display = 'block';
+                            resultElement.style.background = '#4CC9F0';
+                            resultElement.style.color = '#000';
+                            
+                            processStudentPayment(code.data);
+                            
+                            setTimeout(() => {
+                                isProcessing = false;
+                                resultElement.style.display = 'none';
+                            }, 3000);
+                        }
                     }
-                },
-                decoder: {
-                    readers: [
-                        "code_128_reader" // Для QR-кодов учеников будем использовать Code128
-                    ]
-                },
-                locator: {
-                    patchSize: "medium",
-                    halfSample: true
-                },
-                frequency: 10
-            }, function(err) {
-                if (err) {
-                    console.log(err);
-                    document.getElementById('qrCameraPermission').innerHTML = `
-                        <div style="color: var(--text-secondary);">
-                            <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 8px;"></i>
-                            <p style="font-size: 14px;">Камера недоступна</p>
-                            <p style="font-size: 11px; margin-top: 3px;">Перезагрузите страницу для повторной попытки</p>
-                        </div>
-                    `;
-                    return;
+                    
+                    if (isQRScannerActive) {
+                        qrAnimationFrame = requestAnimationFrame(tick);
+                    }
                 }
                 
-                document.getElementById('qrCameraPermission').style.display = 'none';
-                Quagga.start();
-                isQRScannerActive = true;
-            });
-
-            let lastScannedQR = '';
-            let scanTimeout = null;
-
-            Quagga.onDetected(function(result) {
-                if (isProcessing) return;
-                
-                const code = result.codeResult.code;
-                
-                if (code === lastScannedQR) return;
-                
-                isProcessing = true;
-                lastScannedQR = code;
-                
-                const resultElement = document.getElementById('qr-result');
-                resultElement.textContent = `👤 Найден ID ученика: ${code}`;
-                resultElement.style.display = 'block';
-                resultElement.style.background = '#4CC9F0';
-                resultElement.style.color = '#000';
-                
-                processStudentPayment(code);
-                
-                setTimeout(() => {
-                    isProcessing = false;
-                    resultElement.style.display = 'none';
-                }, 3000);
-                
-                clearTimeout(scanTimeout);
-                scanTimeout = setTimeout(() => {
-                    lastScannedQR = '';
-                }, 5000);
+                tick();
+            }).catch(function(err) {
+                console.log(err);
+                document.getElementById('qrCameraPermission').innerHTML = `
+                    <div style="color: var(--text-secondary);">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 8px;"></i>
+                        <p style="font-size: 14px;">Камера недоступна</p>
+                        <p style="font-size: 11px; margin-top: 3px;">Перезагрузите страницу для повторной попытки</p>
+                    </div>
+                `;
             });
         }
         
         function stopQRScanner() {
             if (isQRScannerActive) {
-                Quagga.stop();
                 isQRScannerActive = false;
+                if (qrAnimationFrame) {
+                    cancelAnimationFrame(qrAnimationFrame);
+                }
+                if (qrStream) {
+                    qrStream.getTracks().forEach(track => track.stop());
+                }
+                const video = document.getElementById('qrCameraVideo');
+                video.srcObject = null;
             }
         }
         
